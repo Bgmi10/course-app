@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  password    String  
+  role        Role         @default(STUDENT) 
+  courses     Course[]     @relation("CourseInstructor")
+  enrollments Enrollment[]
+  reviews     Review[]
+  progress    Progress[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Course {
+  id          Int          @id @default(autoincrement())
+  title       String  
+  description String  
+  price       Float  
+  instructor  User         @relation("CourseInstructor", fields: [instructorId], references: [id])
+  instructorId Int  
+  lessons     Lesson[]
+  category    Category     @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  enrollments Enrollment[]
+  reviews     Review[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  Progress Progress[]
+}
+
+model Lesson {
+  id          Int         @id @default(autoincrement())
+  title       String   
+  videoUrl    String   
+  content     String      
+  course      Course      @relation(fields: [courseId], references: [id])
+  courseId    Int   
+  order       Int     
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  Progress Progress[]
+}
+
+model Category {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  courses     Course[]   
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Enrollment {
+  id          Int         @id @default(autoincrement())
+  user        User        @relation(fields: [userId], references: [id])
+  userId      Int   
+  course      Course      @relation(fields: [courseId], references: [id])
+  courseId    Int
+  progress    Progress[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  rating      Int      
+  comment     String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  course      Course   @relation(fields: [courseId], references: [id])
+  courseId    Int
+  createdAt   DateTime @default(now())
+}
+
+model Progress {
+  id          Int         @id @default(autoincrement())
+  user        User        @relation(fields: [userId], references: [id])
+  userId      Int   
+  course      Course      @relation(fields: [courseId], references: [id])
+  courseId    Int   
+  lesson      Lesson      @relation(fields: [lessonId], references: [id])
+  lessonId    Int   
+  completed   Boolean     @default(false)
+  completedAt DateTime?   
+  Enrollment Enrollment[]
+}
+
+enum Role {
+  ADMIN
+  INSTRUCTOR
+  STUDENT
+}
