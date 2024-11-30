@@ -5,6 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose, faInfoCircle, faExclamationCircle, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { ref, set } from "firebase/database";
 import { db } from "../utils/firebase";
+import { SuccessMessage } from "./SuccessMessage";
+import { ErrorMessage } from "./ErrorMessage";
 
 interface Lesson {
   id: string;
@@ -37,6 +39,7 @@ interface Course {
   quizzes : Quiz[];
   instructorid?: string;
   categoryid?: string;
+  imagefiles : string[];
 }
 
 export default function CourseForm() {
@@ -45,7 +48,7 @@ export default function CourseForm() {
     title: "",
     lessons: [],
   });
-
+  const [info, setInfo] = useState(false);
   const [currentLesson, setCurrentLesson] = useState<Partial<Lesson>>({
     title: "",
     description: "",
@@ -54,8 +57,7 @@ export default function CourseForm() {
   });
 
   const [sections, setSections] = useState<Section[]>([]);
-  const [info, setInfo] = useState(false);
-
+  const [imagefilearray, setImageFileArray] = useState(null);
   const [course, setCourse] = useState<Course>({
     title: "",
     description: "",
@@ -64,7 +66,8 @@ export default function CourseForm() {
     sections: [],
     quizzes : [],
     instructorid : "as",
-    categoryid : "aasd"
+    categoryid : "aasd",
+    imagefiles : []
   });
   const [currentQuiz, setCurrentQuiz] = useState<Partial<Quiz>>({
     question: "",
@@ -82,8 +85,7 @@ export default function CourseForm() {
     total: '0.00',
   });
   const uploadRef = useRef<AWS.S3.ManagedUpload | null>(null);
-
-  // Reset entire form to initial state
+  const [Arrayimg, setArrayimg] = useState([]);
   const resetForm = () => {
     setCurrentSection({
       id: `section_${Date.now()}`,
@@ -117,25 +119,6 @@ export default function CourseForm() {
     setSuccessMessage(null);
     setAwsUploadFileLoading(false);
   };
-
-  // Enhanced Error Message Component
-  const ErrorMessage = ({ message }: { message: string }) => (
-    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative flex items-center" role="alert">
-      <FontAwesomeIcon icon={faExclamationCircle} className="mr-2" />
-      <span className="block sm:inline">{message}</span>
-    </div>
-  );
-
-  // Enhanced Success Message Component
-  const SuccessMessage = ({ message }: { message: string }) => (
-    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative flex items-center" role="alert">
-      <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
-      <span className="block sm:inline">{message}</span>
-    </div>
-  );
-
-  // Existing methods from the original implementation
- 
   
   const addSection = () => {
     if (!currentSection.title.trim()) {
@@ -168,6 +151,71 @@ export default function CourseForm() {
     }
   };
 
+  console.log(course)
+
+   AWS.config.update({
+    region: 'eu-north-1',
+    accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID,
+    secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY,
+  });
+
+  const awsVideoUrl = async (file: File) => {
+    setAwsUploadFileLoading(true);
+
+    const getVideoDuration = (file: File) => {
+      return new Promise<number>((resolve, reject) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        const url = URL.createObjectURL(file);
+        video.src = url;
+        video.onloadedmetadata = () => {
+          const duration = video.duration;
+          URL.revokeObjectURL(url);
+          resolve(duration);
+        };
+        video.onerror = () => {
+          reject(new Error('Failed to load video'));
+        };
+      });
+    };
+
+    const duration = await getVideoDuration(file);
+
+    const s3 = new AWS.S3({
+      apiVersion: '2006-03-01',
+      params: { Bucket: import.meta.env.VITE_APP_AWS_NAME },
+    });
+
+    const fileName = `videos/course_${Date.now()}_${Math.random().toString(36).substring(2)}.mp4`;
+    const params: AWS.S3.PutObjectRequest = {
+      Bucket: import.meta.env.VITE_APP_AWS_NAME,
+      Key: fileName,
+      Body: file,
+      ContentType: file.type,
+    };
+
+    const upload = s3.upload(params, {
+      partSize: 10 * 1024 * 1024,
+      queueSize: 1,
+    });
+
+    uploadRef.current = upload;
+    upload.on('httpUploadProgress', (e) => {
+      const uploaded = (e.loaded / (1024 * 1024)).toFixed(2);
+      const total = (e.total / (1024 * 1024)).toFixed(2);
+      const percentage = Math.round((e.loaded / e.total) * 100);
+      setProgress({ uploaded, total, percentage });
+    });
+
+    const result = await upload.promise();
+    setProgress({
+      uploaded : 0, total :  "",percentage : ""
+    });
+    setAwsUploadFileLoading(false);
+
+    return { url: result.Location, duration };
+  };
+
   const addLessonToSection = async () => {
     if (!currentLesson.title?.trim()) {
       setError('Lesson title is required');
@@ -180,76 +228,11 @@ export default function CourseForm() {
     }
   
     try {
-      const awsVideoUrl = async (file: File) => {
-        setAwsUploadFileLoading(true);
-  
-        const getVideoDuration = (file: File) => {
-          return new Promise<number>((resolve, reject) => {
-            const video = document.createElement('video');
-            video.preload = 'metadata';
-            const url = URL.createObjectURL(file);
-            video.src = url;
-            video.onloadedmetadata = () => {
-              const duration = video.duration;
-              URL.revokeObjectURL(url);
-              resolve(duration);
-            };
-            video.onerror = () => {
-              reject(new Error('Failed to load video'));
-            };
-          });
-        };
-  
-        const duration = await getVideoDuration(file);
-  
-        AWS.config.update({
-          region: 'eu-north-1',
-          accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID,
-          secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY,
-        });
-  
-        const s3 = new AWS.S3({
-          apiVersion: '2006-03-01',
-          params: { Bucket: import.meta.env.VITE_APP_AWS_NAME },
-        });
-  
-        const fileName = `videos/course_${Date.now()}_${Math.random().toString(36).substring(2)}.mp4`;
-        const params: AWS.S3.PutObjectRequest = {
-          Bucket: import.meta.env.VITE_APP_AWS_NAME,
-          Key: fileName,
-          Body: file,
-          ContentType: file.type,
-        };
-  
-        const upload = s3.upload(params, {
-          partSize: 10 * 1024 * 1024,
-          queueSize: 1,
-        });
-  
-        uploadRef.current = upload;
-        upload.on('httpUploadProgress', (e) => {
-          const uploaded = (e.loaded / (1024 * 1024)).toFixed(2);
-          const total = (e.total / (1024 * 1024)).toFixed(2);
-          const percentage = Math.round((e.loaded / e.total) * 100);
-          setProgress({ uploaded, total, percentage });
-        });
-  
-        const result = await upload.promise();
-        setProgress({
-          uploaded : 0, total :  "",percentage : ""
-        });
-        setAwsUploadFileLoading(false);
-  
-        return { url: result.Location, duration };
-      };
-  
       let videoDetails = { url: '', duration: 0 };
-  
       if (uploadFile) {
         videoDetails = await awsVideoUrl(uploadFile);
-      }
-  
-      // Add lesson to the appropriate section
+      };
+
       const newLesson = {
         ...currentLesson,
         id: `lesson_${Date.now()}`,
@@ -285,7 +268,6 @@ export default function CourseForm() {
         duration: 0,
       });
       setUploadFile(null);
-      setSuccess(true);
     } catch (error) {
       console.error('Error uploading video or adding lesson:', error);
       setError('Failed to add lesson');
@@ -355,6 +337,16 @@ export default function CourseForm() {
     return true;
   };
 
+  const handleimagefile = async (e) => {
+    const file = e.target?.files[0];
+      const isvalidtype = ['image/png', 'image/jpeg', 'image/jpg'].includes(file.type);
+      if(!isvalidtype){
+      setError('only .png .jpeg .jpg files are allowed');
+      return;
+      };
+      setImageFileArray(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -373,7 +365,6 @@ export default function CourseForm() {
         averageRating: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        categoryId : '',
         sections: sections,
       } as Course;
 
@@ -397,6 +388,62 @@ export default function CourseForm() {
     }
   };
 
+  const uploadImageToAws = async(file) => {
+    try {
+      
+      const s3 = new AWS.S3({
+        apiVersion: '2006-03-01',
+        params: { Bucket: import.meta.env.VITE_APP_AWS_NAME },
+      });
+  
+      const fileName = `images/course_${Date.now()}_${Math.random().toString(36).substring(2)}.jpeg`;
+      const params: AWS.S3.PutObjectRequest = {
+        Bucket: import.meta.env.VITE_APP_AWS_NAME,
+        Key: fileName,
+        Body: file,
+        ContentType: file.type,
+      };
+  
+      const upload = s3.upload(params, {
+        partSize: 10 * 1024 * 1024,
+        queueSize: 1,
+      });
+
+      const url = await upload.promise();
+      return { 
+        result : url.Location
+      };
+     
+    }
+    catch(e){
+      console.log(e);
+    }
+  };
+
+  const handleUploadToAws = async () => {
+    if (!imagefilearray || imagefilearray.length === 0) {
+      setError('Please upload an image...');
+      return;
+    }
+  
+    try {
+      const { result } = await uploadImageToAws(imagefilearray);
+  
+      // Use function to ensure state update based on the previous state
+      setCourse((prevCourse) => {
+        const updatedImages = [...prevCourse.imagefiles, result];
+        
+        return { ...prevCourse, imagefiles: updatedImages };
+      });
+    } catch (error) {
+      setError('Error uploading image');
+      console.error(error);
+    }
+  };
+  
+  
+
+console.log(course)
   return (
     <div className="min-h-screen bg-black text-white p-6">
     <div className="max-w-3xl mx-auto bg-black/40 p-8 rounded-xl shadow-md backdrop-blur-md">
@@ -404,7 +451,7 @@ export default function CourseForm() {
       {error && <ErrorMessage message={error} />}
         {successMessage && <SuccessMessage message={successMessage} />}
   
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label className="block text-lg font-medium">Course Title</label>
           <input
@@ -603,6 +650,10 @@ export default function CourseForm() {
               Add Quiz
             </button>
           </div>
+        </div>
+        <div>
+            <input type="file" onChange={handleimagefile}/>
+            <button onClick={handleUploadToAws}>submit</button>
         </div>
   
         <button type="submit" className="bg-blue-500 w-full text-white p-2 rounded-md hover:bg-blue-600">
