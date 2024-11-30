@@ -1,5 +1,5 @@
 import { FcGoogle } from "react-icons/fc";
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { validEmail } from "../../utils/validEmail";
 import { auth } from "../../utils/firebase";
 import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
@@ -14,27 +14,29 @@ export default function Signin() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   
-  const emailRef = useRef();
-  const passwordRef = useRef();
+  const emailRef = useRef<any>();
+  const passwordRef = useRef<any>();
 
   useEffect(() => {
     emailRef.current.focus();
   }, []);
 
-  const handleChange = (e) => {
+  const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErr('');
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && e.target.name === 'email') {
+  const handleKeyDown = (e : React.KeyboardEvent<HTMLInputElement>) => {
+
+    const target = e.currentTarget as HTMLInputElement
+    if (e.key === 'Enter' && target.name === 'email') {
       e.preventDefault();
       passwordRef.current.focus();
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e : React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 

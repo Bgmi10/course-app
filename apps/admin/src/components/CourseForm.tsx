@@ -1,6 +1,6 @@
 import { ref, set } from 'firebase/database';
 import { db } from '../utils/firebase';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import AWS from 'aws-sdk';
 import {motion} from 'framer-motion'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,7 +11,7 @@ interface Lesson {
     title: string;
     description: string;
     videourl: string;
-    duration: string;
+    duration: number;
 }
 
 interface Quiz {
@@ -59,13 +59,13 @@ export default function CourseForm(){
     title: "",
     lessons: [] as Partial<Lesson>[]
   });
-  const [region1, setRegion1] = useState('eu-north-1');
-   const [currentLesson, setCurrentLesson] = useState<Partial<Lesson>>({
-    title: "",
-    description: "",
-    videourl: "",
-    duration: ""
-   });
+  const [currentLesson, setCurrentLesson] = useState<Partial<Lesson>>({
+   title: "",
+   description: "",
+   videourl: "",
+   duration: 0
+  });
+  const [sections, setSections] = useState<{id: string; title: string; lessons: Partial<Lesson>[]}[]>([]);
   const [currentQuiz, setCurrentQuiz] = useState<Partial<Quiz>>({
     question: "",
     options : ["", "", "", ""],
@@ -98,37 +98,35 @@ export default function CourseForm(){
     uploaded : '0.00',
     total : '0.00'
   });
+  const uploadRef = useRef<AWS.S3.ManagedUpload | null>(null);
 
+  console.log(course, currentSection , currentLesson)
+  
   const addSection = () => {
+  
     if (!currentSection.title.trim()) {
       setError('Section title is required');
       return;
     }
+    // const lessonsArray = currentSection.lessons.map((lesson, index) => ({
+    //   ...lesson,
+    //   id: `lesson_${Date.now()}_${index}`,
+    //   order: index + 1
+    // }));
 
-    const sectionId = `section_${Date.now()}`;
-    const lessonsObj = currentSection.lessons.reduce((acc, lesson, index) => {
-      const lessonId = `lesson_${Date.now()}_${index}`;
-      acc[lessonId] = {
+    const newSection = {
+      id: `section_${Date.now()}`,
+      title: currentSection.title,
+      lessons: currentSection.lessons.map((lesson, index) => ({
         ...lesson,
-        id: lessonId,
+        id: `lesson_${Date.now()}_${index}`,
         order: index + 1
-      } as Lesson;
-      return acc;
-    }, {} as { [key: string]: Lesson });
-
-    setCourse(prev => ({
-      ...prev,
-      sections: {
-        ...prev.sections,
-        [sectionId]: {
-          title: currentSection.title,
-          lessons: lessonsObj
-        }
-      }
-    }));
-    
+      }))
+    };
+    //@ts-ignore
+    setSections(prev => [...prev,newSection]);
+    setCourse(prev => ({...prev, sections : newSection}));
     setError('');
-   
     setCurrentSection({ title: '', lessons: [] });
   };
 
@@ -162,9 +160,30 @@ export default function CourseForm(){
         }
       
         setAwsuploadfileloading(true);
+
+        const getVideoDuration = (file: File) => {
+          return new Promise<number>((resolve, reject) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            const url = URL.createObjectURL(file);
+            video.src = url;
+            video.onloadedmetadata = () => {
+              const duration = video.duration;
+              URL.revokeObjectURL(url);
+              resolve(duration);
+            };
+        
+            // Handle any errors while loading the video
+            video.onerror = () => {
+              reject(new Error('Failed to load video'));
+            };
+          });
+        };
+        
+        const duration1 =  await getVideoDuration(file);
       
         AWS.config.update({
-          region : region1,
+          region : 'eu-north-1',
           accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID,
           secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY,
         });
@@ -183,13 +202,13 @@ export default function CourseForm(){
           Body: file,
           ContentType: file.type,
         };
-      
+  
         try {
           const upload = s3.upload(params, {
             partSize: 10 * 1024 * 1024,
             queueSize: 1
           })
-
+         uploadRef.current = upload;
          upload.on('httpUploadProgress', (e) => {
             const uploaded1 = (e.loaded / (1024 * 1024)).toFixed(2);
             const total1 = (e.total / (1024 * 1024)).toFixed(2);
@@ -207,13 +226,15 @@ export default function CourseForm(){
           };
       
           const signedUrl = s3.getSignedUrl('getObject', urlParams);
-       
+          setSuccess(true)
+          //@ts-ignore
           setCurrentSection(prev => ({
             ...prev,
             lessons: [...prev.lessons, { 
               ...currentLesson, 
               id: `lesson_${Date.now()}`,
-              videourl : result?.Location 
+              videourl : result?.Location,
+              duration :  duration1
             }]
            }));
       
@@ -234,16 +255,41 @@ export default function CourseForm(){
 
     try{
     
-      if(uploadfile){
-          let videourl : any = '';
-          videourl = await aws_vid_url(uploadfile);
-      }
-    
+      // if(uploadfile){
+      //     let videourl : any = '';
+      //     videourl = await aws_vid_url(uploadfile);
+      // }
+      setCurrentSection(prev => ({
+        ...prev,
+        lessons: [...prev.lessons, { 
+          ...currentLesson, 
+          id: `lesson_${Date.now()}`,
+          // videourl : result?.Location,
+          // duration :  duration1
+        }]
+       }));
+      
+       setSections(prevSections => 
+        prevSections.map(section => 
+          section.title === currentSection.title 
+            ? {
+                ...section, 
+                lessons: [
+                  ...section.lessons, 
+                  { 
+                    ...currentLesson, 
+                    id: `lesson_${Date.now()}` 
+                  }
+                ]
+              }
+            : section
+        )
+      );
       setCurrentLesson({
         title: '',
         description: '',
         videourl: '',
-        duration: ''
+        duration: 0
         });
        }
     catch(e){
@@ -362,6 +408,14 @@ export default function CourseForm(){
     }
 }
 
+
+  const cancleUpload = () => {
+    if(uploadRef.current) {
+      uploadRef.current.abort();
+      setAwsuploadfileloading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-6">
     <div className="max-w-3xl mx-auto bg-black/40 p-8 rounded-xl shadow-md backdrop-blur-md">
@@ -448,12 +502,22 @@ export default function CourseForm(){
                 placeholder="Lesson Title"
                 className="w-full p-2 rounded-md bg-gray-800 text-white placeholder-gray-500"
               />
+               <input
+                type="text"
+                value={currentLesson.description || ''}
+                onChange={(e) =>{ setCurrentLesson(prev => ({ ...prev, description: e.target.value })); 
+                setError('');}}
+                placeholder="Lesson Description"
+                required={false}
+                className="w-full p-2 rounded-md bg-gray-800 text-white placeholder-gray-500"
+              />
               <div className='text-white font-semibold'>Uploadvideo</div>
               {error === "only accepts mp4" && <span className='text-red-500 font-normal px-4'>{error}</span>}
+              {success && <span className='text-green-500 font-normal px-4'>video uploaded successfully</span>}
               {awsuploadfileloading ? (
                   <>
                      <div className='flex gap-2'>
-                          <FontAwesomeIcon icon={faClose} className='text-white mt-[-5px] cursor-pointer' fontSize={24} onClick={() => setRegion1('')}/>
+                          <FontAwesomeIcon icon={faClose} className='text-white mt-[-5px] cursor-pointer' fontSize={24} onClick={cancleUpload}/>
                          <div className="relative w-full h-4 bg-gray-800 rounded-md">
                           <motion.div
                             className="absolute top-0 left-0 h-full bg-blue-500 rounded-md"
@@ -472,30 +536,24 @@ export default function CourseForm(){
                 placeholder="Video URL"
                 className="w-full p-2 rounded-md bg-gray-800 text-white placeholder-gray-500"
               />)}
-              <input
-                type="number"
-                value={currentLesson.duration}
-                onChange={(e) => {setCurrentLesson(prev => ({ ...prev, duration: parseInt(e.target.value) }));
-                setError('');}}
-                placeholder="Lesson Duration (minutes)"
-                className="w-full p-2 rounded-md bg-gray-800 text-white placeholder-gray-500"
-              />
-              <button
+        
+              <motion.button
                 type="button"
                 onClick={addLessonToSection}
                 className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                whileTap={{ scale: 0.95 }}
               >
                 Add Lesson
-              </button>
+              </motion.button>
             </div>
   
-            <button
-              type="button"
-              onClick={addSection}
-              className="bg-blue-500 text-white w-52 px-4 py-2 rounded-md hover:bg-blue-600"
-            >
-              Add Section
-            </button>
+          <motion.button
+            className="bg-blue-500 text-white px-6 py-2 rounded-md"
+            onClick={addSection}
+            whileTap={{ scale: 0.95 }}
+          >
+            Add Section
+          </motion.button>
           </div>
         </div>
   
@@ -512,7 +570,8 @@ export default function CourseForm(){
               className="w-full p-2 rounded-md bg-gray-800 text-white placeholder-gray-500"
             />
             
-            {currentQuiz.options.map((option, idx) => (
+            { //@ts-ignore
+            currentQuiz.options.map((option, idx) => (
               <input
                 key={idx}
                 type="text"
