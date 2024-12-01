@@ -1,6 +1,7 @@
 import { child, get, ref } from "firebase/database"
 import { useEffect, useState } from "react"
 import { db } from "../utils/firebase"
+import { Link } from "react-router-dom";
 
 
 interface Section {
@@ -20,7 +21,7 @@ interface Lessons {
 interface Course {
  id : string;
  description : string;
- imageurl : string;
+ imageFiles : string[];
  averageRating : number;
  categoryid : string;
  createdAt : string;
@@ -28,11 +29,12 @@ interface Course {
  price : number;
  quizzes : any;
  sections : Section[];
+ title : string;
 }
+
 export default function Courses () {
 
     const [data, setData] = useState<Course[] | null>(null);
-    console.log(data)
 
     useEffect(() => {
         const fetch_course = async () => {
@@ -58,10 +60,39 @@ export default function Courses () {
         }
 
         fetch_course();
-    },[])
+    },[]);
+
+    const length = Array.from({ length : 10} , (i) => i);
+
+    if(!data){
     return (
-        <div className="">
-            
-        </div>
+      <>
+        {
+            length.map((i,index) => (
+              <div className="w-52 h-52 bg-gray-400 animate-pulse flex flex-wrap justify-start rounded-lg" key={i}></div>
+            ))
+        }
+       </>
+      )
+    }
+    return (
+       <> 
+         <div className="justify-center flex mt-10 text-white">
+         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center  bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug dark:bg-gradient-to-b dark:from-blue-600 dark:via-gray-600 dark:to-white">
+           Courses
+         </h1>
+         </div>
+
+         <div className="flex flex-wrap text-white lg:justify-start sm: justify-center p-6 px-10">
+          {
+             data?.map((i) => (
+                <Link key={i?.id} to={`/edit-course/${i?.id}`} className="m-4">
+                   <img src={i?.imageFiles?.[0]}  alt="course-img" className="rounded-lg w-96 cursor-pointer"/>
+                   <span className="font-semibold text-xl px-1 ">{i?.title}</span>
+                </Link>  
+             ))
+          }
+         </div>
+        </>
     )
 }

@@ -11,7 +11,7 @@ const s3 = new AWS.S3();
 export const uploadToS3 = async (file: File, folderName: string): Promise<string> => {
   const fileName = `${folderName}/${Date.now()}-${file.name}`;
   const params: AWS.S3.PutObjectRequest = {
-    Bucket: import.meta.env.VITE_APP_AWS_NAME,
+    Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
     Key: fileName,
     Body: file,
     ContentType: file.type,
@@ -26,3 +26,17 @@ export const uploadToS3 = async (file: File, folderName: string): Promise<string
   }
 };
 
+export const deleteFromS3 = async (fileUrl: string): Promise<void> => {
+  const key = fileUrl.split('/').slice(3).join('/');
+  const params: AWS.S3.DeleteObjectRequest = {
+    Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
+    Key: key,
+  };
+
+  try {
+    await s3.deleteObject(params).promise();
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    throw new Error('File deletion failed');
+  }
+};

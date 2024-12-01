@@ -10,6 +10,7 @@ import ProtectedRoutes from "./components/ProtectedRoutes";
 import Events from "./components/Events";
 import { useContext, useEffect } from "react";
 import AuthContext from "./context/AuthContext";
+import EditCourse from "./components/EditCourse";
 
 
 function App() {
@@ -29,12 +30,12 @@ function App() {
        <Header />
         <Routes>
           <Route path="/" element={ <DashBoard /> } />
-        
           <Route element={ <ProtectedRoutes children={ <Outlet /> }/> }>
           <Route path="/create-course" element={ <CourseForm /> } />
           <Route path="/view-courses" element={ <Courses /> } />
           <Route path="/student-list" element={ <StudentsList /> } />
           <Route path="/events" element={ <Events /> } />
+          <Route path="/edit-course/:id" element={ <EditCourse /> } />
           </Route>
           {<Route path="/signin" element={ <Signin /> } />}
           <Route path="*" element={ <NotFound /> } />

@@ -35,7 +35,7 @@
   interface Course {
     title: string;
     description: string;
-    price: number;
+    price: string;
     language: string;
     sections: Section[];
     instructorId?: string;
@@ -48,7 +48,7 @@
     const [course, setCourse] = useState<Course>({
       title: "",
       description: "",
-      price: 0,
+      price: "",
       language: "",
       sections: [],
       instructorId: "",
@@ -290,7 +290,6 @@
                   placeholder="Price"
                   className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
-                  min="0"
                 />
                 <input
                   type="text"
