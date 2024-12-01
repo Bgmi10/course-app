@@ -32,7 +32,7 @@ interface Course {
 export default function Courses () {
 
     const [data, setData] = useState<Course[] | null>(null);
-    
+    console.log(data)
 
     useEffect(() => {
         const fetch_course = async () => {
