@@ -363,7 +363,7 @@ export default function EditCourse() {
       setError('Failed to remove image. Please try again.');
     }
   };
-
+  
   const addQuiz = (sectionId: string, lessonId: string) => {
     if (!course) return;
     const newQuiz: Quiz = {
@@ -395,7 +395,7 @@ export default function EditCourse() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen text-white flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -439,15 +439,13 @@ export default function EditCourse() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="max-w-4xl mx-auto bg-black/40 p-8 rounded-xl shadow-lg backdrop-blur-sm">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
+    <div className="min-h-screen  text-white p-6">
+      <div className="max-w-4xl mx-auto bg-black/80 border border-slate-900 p-8 rounded-xl shadow-lg backdrop-blur-sm">
+
+        <motion.h1 initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl font-bold text-blue-400 text-center mb-8"
-        >
-          Edit Course
+          transition={{ duration: 0.5 }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center  bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug dark:bg-gradient-to-b dark:from-blue-600 dark:via-gray-600 dark:to-white">
+        Edit Course
         </motion.h1>
 
         {successMessage && (

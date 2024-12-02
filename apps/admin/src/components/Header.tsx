@@ -3,12 +3,14 @@ import { FaBars, FaTimes, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, 
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignOut } from '@fortawesome/free-solid-svg-icons';
 
 
 
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  //@ts-ignore
   const { isauthenticated, user, Logout } =  useContext(AuthContext);
 
   const toggleMenu = () => {
@@ -27,16 +29,17 @@ export const Header = () => {
           <Link to="/view-courses" className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">
             <FaClipboardList /> <span>View Courses</span>
           </Link>
-          <a to="/student-list" className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">
+          <Link to="/student-list" className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">
             <FaUserGraduate /> <span>Student List</span>
-          </a>
-          <a to="/events" className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">
+          </Link>
+          <Link to="/events" className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">
             <FaTicketAlt/> <span>Events planning</span>
-          </a>
+          </Link>
           <div className="flex items-center gap-4">
-          {isauthenticated ? <FaUserCircle fontSize={24} onClick={() => Logout()}  className='cursor-pointer hover:text-blue-400'/>  : <button className="bg-blue-400 p-2 w-32 font-medium rounded-lg text-white hover:bg-blue-500 transition-colors" onClick={() => window.location.href = '/signin'}>
+          {isauthenticated ?   <span onClick={() => Logout()} className='cursor-pointer text-sm font-medium'>Logout <FontAwesomeIcon icon={faSignOut} /></span> : <button className="bg-blue-400 p-2 w-32 font-medium rounded-lg text-white hover:bg-blue-500 transition-colors" onClick={() => window.location.href = '/signin'}>
             Sign in
           </button>}
+          
         </div>
         </nav>
 
@@ -44,7 +47,8 @@ export const Header = () => {
           <button onClick={toggleMenu}>
             {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
           </button>
-          { isauthenticated && <FaUserCircle fontSize={24} onClick={() => Logout()}/> }
+          {/* { isauthenticated && <FaUserCircle fontSize={24} onClick={() => Logout()}/> } */}
+           { isauthenticated && <span onClick={() => Logout()}>Logout <FontAwesomeIcon icon={faSignOut} /></span>}
         </div>
       </div>
 

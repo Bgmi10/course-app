@@ -4,37 +4,37 @@ import { db } from "../utils/firebase"
 import { Link } from "react-router-dom";
 
 
-interface Section {
-    id : string;
-    lessons : Lessons[];
-    title : string;
-}
+// interface Section {
+//     id : string;
+//     lessons : Lessons[];
+//     title : string;
+// }
 
-interface Lessons {
-    id : string;
-    duration : number;
-    description : string;
-    title : string;
-    videourl : string;
-}
+// interface Lessons {
+//     id : string;
+//     duration : number;
+//     description : string;
+//     title : string;
+//     videourl : string;
+// }
 
-interface Course {
- id : string;
- description : string;
- imageFiles : string[];
- averageRating : number;
- categoryid : string;
- createdAt : string;
- instructorid : string;
- price : number;
- quizzes : any;
- sections : Section[];
- title : string;
-}
+// interface Course {
+//  id : string;
+//  description : string;
+//  imageFiles : string[];
+//  averageRating : number;
+//  categoryid : string;
+//  createdAt : string;
+//  instructorid : string;
+//  price : number;
+//  quizzes : any;
+//  sections : Section[];
+//  title : string;
+// }
 
 export default function Courses () {
 
-    const [data, setData] = useState<Course[] | null>(null);
+    const [data, setData] = useState(null);
 
     useEffect(() => {
         const fetch_course = async () => {
@@ -46,6 +46,7 @@ export default function Courses () {
                             id: e,
                             ...val[e]
                         }))
+                        //@ts-ignore
                         setData(coursearray);
                     }
                     else {
@@ -69,6 +70,7 @@ export default function Courses () {
       <>
         {
             length.map((i,index) => (
+                //@ts-ignore
               <div className="w-52 h-52 bg-gray-400 animate-pulse flex flex-wrap justify-start rounded-lg" key={i}></div>
             ))
         }
@@ -85,6 +87,7 @@ export default function Courses () {
 
          <div className="flex flex-wrap text-white lg:justify-start sm: justify-center p-6 px-10">
           {
+            //@ts-ignore
              data?.map((i) => (
                 <Link key={i?.id} to={`/edit-course/${i?.id}`} className="m-4">
                    <img src={i?.imageFiles?.[0]}  alt="course-img" className="rounded-lg w-96 cursor-pointer"/>
