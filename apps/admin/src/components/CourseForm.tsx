@@ -1,4 +1,4 @@
-  import React, { useState, useCallback, useMemo } from 'react';
+  import React, { useState, useCallback, useMemo, useEffect } from 'react';
   import { motion, AnimatePresence } from 'framer-motion';
   import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
   import { faArrowLeft, faArrowRight, faCheck, faPlus, faUpload, faTimes } from "@fortawesome/free-solid-svg-icons";
@@ -86,7 +86,6 @@
       setCourse(prev => ({ ...prev, [name]: value }));
     };
     
-
     const addSection = () => {
       if (currentSection.title.trim()) {
         setCourse(prev => ({
@@ -98,8 +97,6 @@
         setError("Section title cannot be empty");
       }
     };
-
-    console.log(course)
   
     const addLesson = () => {
     
@@ -195,7 +192,7 @@
 
         await set(courseRef, finalCourse);
         setSuccessMessage('Course created successfully!');
-        // Reset form or navigate to a success page
+        setCourse({ title: "", description: "", price: "",imageFiles: [],language: "",sections: [],categoryId: "", instructorId: "" });
       } catch (e) {
         console.error(e);
         setError('Failed to create course. Please try again.');

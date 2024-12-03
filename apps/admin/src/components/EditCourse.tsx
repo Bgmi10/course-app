@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faAngleUp, faPencilAlt, faTrash, faUpload, faSave, faTimes, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -8,7 +8,6 @@ import { db } from "../utils/firebase";
 import { uploadToS3, deleteFromS3 } from '../utils/s3upload';
 import { useDropzone } from 'react-dropzone';
 
-// issue while deleting non-url of lessons and also and minor bugs in s3 file 
 
 interface Quiz {
   id: string;
@@ -55,6 +54,7 @@ export default function EditCourse() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -203,21 +203,19 @@ export default function EditCourse() {
     setIsLoading(true);
     try {
       await remove(ref(db, `courses/${id}`));
-      // Delete all images from S3
-      await Promise.all(course.imageFiles.map(imageUrl => deleteFromS3(imageUrl)));
-      // Delete all video files from S3
-      await Promise.all(course.sections.flatMap(section =>
-        section.lessons.map(lesson => deleteFromS3(lesson.videoUrl))
+      await Promise.all(course?.imageFiles?.map(imageUrl => deleteFromS3(imageUrl)));
+      await Promise.all(course?.sections?.flatMap(section =>
+        section?.lessons?.map(lesson => deleteFromS3(lesson?.videoUrl))
       ));
       setSuccessMessage('Course deleted successfully!');
-      // Redirect to courses list or home page
+      navigate('/view-courses')
     } catch (e) {
       console.error(e);
       setError('Failed to delete course. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   const handleDeleteSection = async (sectionId: string) => {
     if (!course) return;
@@ -410,7 +408,7 @@ export default function EditCourse() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen  text-white flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -425,7 +423,7 @@ export default function EditCourse() {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen text-white flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -536,7 +534,7 @@ export default function EditCourse() {
           )}
 
           <div className="grid grid-cols-3 gap-4 mt-4">
-            {course.imageFiles.map((image, index) => (
+            {course?.imageFiles?.map((image, index) => (
               <div key={index} className="relative group">
                 <img src={image} alt={`Course image ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
                 {editMode && (
@@ -601,7 +599,7 @@ export default function EditCourse() {
                       {section?.lessons?.map((lesson) => (
                         <div key={lesson.id} className="bg-gray-700 p-4 rounded-md mt-2">
                           <div className="flex justify-between items-center mb-2">
-                            <h4 className="text-lg font-medium text-blue-300">{lesson.title}</h4>
+                            <h4 className="text-lg font-medium text-blue-300">{lesson?.title}</h4>
                             {editMode && (
                               <button
                                 onClick={() => handleDeleteLesson(section.id, lesson.id)}
@@ -616,15 +614,15 @@ export default function EditCourse() {
                               <input
                                 type="text"
                                 name="title"
-                                value={lesson.title}
+                                value={lesson?.title}
                                 onChange={(e) => handleLessonChange(section.id, lesson.id, e)}
                                 placeholder="Lesson Title"
                                 className="w-full p-2 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                               />
                               <textarea
                                 name="description"
-                                value={lesson.description}
-                                onChange={(e) => handleLessonChange(section.id, lesson.id, e)}
+                                value={lesson?.description}
+                                onChange={(e) => handleLessonChange(section?.id, lesson?.id, e)}
                                 placeholder="Lesson Description"
                                 className="w-full p-2 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none mb-2"
                               />
@@ -632,23 +630,23 @@ export default function EditCourse() {
                                 <input
                                   type="file"
                                   accept="video/*"
-                                  onChange={(e) => handleVideoUpload(section.id, lesson.id, e)}
+                                  onChange={(e) => handleVideoUpload(section?.id, lesson?.id, e)}
                                   className="hidden"
-                                  id={`video-upload-${lesson.id}`}
+                                  id={`video-upload-${lesson?.id}`}
                                 />
                                 <label
-                                  htmlFor={`video-upload-${lesson.id}`}
+                                  htmlFor={`video-upload-${lesson?.id}`}
                                   className="cursor-pointer flex items-center justify-center w-full p-2 bg-gray-600 rounded-md text-white hover:bg-gray-500 transition duration-300"
                                 >
                                   <FontAwesomeIcon icon={faUpload} className="mr-2" />
-                                  {lesson.videoUrl ? 'Change Video' : 'Upload Video'}
+                                  {lesson?.videoUrl ? 'Change Video' : 'Upload Video'}
                                 </label>
                               </div>
                             </>
                           ) : (
                             <>
-                              <p className="text-sm text-gray-400 mb-2">{lesson.description}</p>
-                              {lesson.videoUrl && (
+                              <p className="text-sm text-gray-400 mb-2">{lesson?.description}</p>
+                              {lesson?.videoUrl && (
                                 <div className="aspect-w-16 aspect-h-9">
                                   <video src={lesson.videoUrl} controls className="rounded-md" />
                                 </div>
@@ -657,7 +655,7 @@ export default function EditCourse() {
                           )}
                           <div className="mt-4">
                             <h5 className="text-md font-medium text-blue-300 mb-2">Quizzes</h5>
-                            {lesson.quizzes.map((quiz) => (
+                            {lesson?.quizzes?.map((quiz) => (
                               <div key={quiz.id} className="bg-gray-600 p-3 rounded-md mb-2">
                                 {editMode ? (
                                   <>
@@ -665,7 +663,7 @@ export default function EditCourse() {
                                       <input
                                         type="text"
                                         name="question"
-                                        value={quiz.question}
+                                        value={quiz?.question}
                                         onChange={(e) => handleQuizChange(section.id, lesson.id, quiz.id, e)}
                                         placeholder="Quiz Question"
                                         className="w-full p-2 bg-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -690,14 +688,14 @@ export default function EditCourse() {
                                     <input
                                       type="text"
                                       name="answer"
-                                      value={quiz.answer}
+                                      value={quiz?.answer}
                                       onChange={(e) => handleQuizChange(section.id, lesson.id, quiz.id, e)}
                                       placeholder="Correct Answer"
                                       className="w-full p-2 bg-gray-500 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                   </>
                                 ) : (
-                                  <p className="font-medium text-white">{quiz.question}</p>
+                                  <p className="font-medium text-white">{quiz?.question}</p>
                                 )}
                               </div>
                             ))}
