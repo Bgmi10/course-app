@@ -6,6 +6,8 @@
   import { db } from "../utils/firebase";
   import { uploadToS3 } from '../utils/s3upload';
   import { useDropzone } from 'react-dropzone';
+import { ErrorMessage } from './ErrorMessage';
+import { SuccessMessage } from './SuccessMessage';
 
   interface Quiz {
     id: string;
@@ -238,6 +240,7 @@
         } finally {
           setIsUploading(false);
           setUploadProgress(0);
+          setSuccessMessage('')
         }
       }
     };
@@ -503,25 +506,8 @@
     Create New Course
   </motion.h1>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500 text-white p-4 rounded-md mb-6"
-            >
-              {error}
-            </motion.div>
-          )}
-          {successMessage && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-green-500 text-white p-4 rounded-md mb-6"
-            >
-              {successMessage}
-            </motion.div>
-          )}
-          
+          <ErrorMessage message={error} />
+          <SuccessMessage message={successMessage} />
           <AnimatePresence mode="wait">
             {renderStep()}
           </AnimatePresence>

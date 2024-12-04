@@ -27,7 +27,7 @@ export const uploadToS3 = async (file: File, folderName: string): Promise<string
 };
 
 export const deleteFromS3 = async (fileUrl: string): Promise<void> => {
-
+  if(fileUrl === '') return;
   const decodedUrl = decodeURIComponent(fileUrl);
   const key = decodedUrl.split('/').slice(3).join('/');
   const params: AWS.S3.DeleteObjectRequest = {

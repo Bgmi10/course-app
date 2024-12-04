@@ -7,7 +7,11 @@ import { child, get, ref, update, remove } from "firebase/database";
 import { db } from "../utils/firebase";
 import { uploadToS3, deleteFromS3 } from '../utils/s3upload';
 import { useDropzone } from 'react-dropzone';
+import { ErrorMessage } from './ErrorMessage';
+import { SuccessMessage } from './SuccessMessage';
 
+
+// bug in deleting the lessons in firebase && issue in deleting the whole course when its empty of aws video url
 
 interface Quiz {
   id: string;
@@ -202,11 +206,11 @@ export default function EditCourse() {
     if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) return;
     setIsLoading(true);
     try {
+      //await Promise.all(course?.imageFiles?.map(imageUrl => imageUrl && deleteFromS3(imageUrl)));
+      // await Promise.all(course?.sections?.flatMap(section =>
+      //   section?.lessons?.map(lesson => lesson?.videoUrl && deleteFromS3(lesson?.videoUrl))
+      // ));
       await remove(ref(db, `courses/${id}`));
-      await Promise.all(course?.imageFiles?.map(imageUrl => deleteFromS3(imageUrl)));
-      await Promise.all(course?.sections?.flatMap(section =>
-        section?.lessons?.map(lesson => deleteFromS3(lesson?.videoUrl))
-      ));
       setSuccessMessage('Course deleted successfully!');
       navigate('/view-courses')
     } catch (e) {
@@ -220,14 +224,16 @@ export default function EditCourse() {
   const handleDeleteSection = async (sectionId: string) => {
     if (!course) return;
     if (!window.confirm('Are you sure you want to delete this section? This action cannot be undone.')) return;
+    
     try {
-      const updatedSections = course?.sections.filter(section => section.id !== sectionId);
-      const sectionToDelete = course?.sections.find(section => section.id === sectionId);
+      const updatedSections = course.sections.filter(section => section.id !== sectionId);
+      const sectionToDelete = course.sections.find(section => section.id === sectionId);
+  
       if (sectionToDelete) {
-        // Delete all video files from S3 for this section
-        await Promise.all(sectionToDelete?.lessons?.map(lesson => deleteFromS3(lesson?.videoUrl)));
+        await Promise.all(sectionToDelete?.lessons?.map(lesson => deleteFromS3(lesson.videoUrl)));
       }
-      await update(ref(db, `courses/${course.id}/sections`), updatedSections);
+      const updates = { [`courses/${course.id}/sections`]: updatedSections };
+      await update(ref(db), updates);
       setCourse(prev => prev ? { ...prev, sections: updatedSections } : null);
       setSuccessMessage('Section deleted successfully!');
     } catch (e) {
@@ -235,34 +241,57 @@ export default function EditCourse() {
       setError('Failed to delete section. Please try again.');
     }
   };
+  
 
   const handleDeleteLesson = async (sectionId: string, lessonId: string) => {
     if (!course) return;
     if (!window.confirm('Are you sure you want to delete this lesson? This action cannot be undone.')) return;
+  
     try {
+      // Initialize an updated sections array and store the video URL to delete
+      let videoUrlToDelete = null;
       const updatedSections = course.sections.map(section => {
         if (section.id === sectionId) {
           const lessonToDelete = section.lessons.find(lesson => lesson.id === lessonId);
           if (lessonToDelete) {
-            // Delete video file from S3
-            deleteFromS3(lessonToDelete.videoUrl);
+            videoUrlToDelete = lessonToDelete.videoUrl;  // Capture the URL for deletion from S3
           }
           return {
             ...section,
-            lessons: section.lessons.filter(lesson => lesson.id !== lessonId)
+            lessons: section.lessons.filter(lesson => lesson.id !== lessonId),
           };
         }
         return section;
       });
-      //@ts-ignore
-      await update(ref(db, `courses/${course.id}/sections/${sectionId}/lessons`), updatedSections.find(section => section.id === sectionId)?.lessons);
+  
+      // Delete the video file from S3, if any
+      if (videoUrlToDelete) {
+        await deleteFromS3(videoUrlToDelete);
+      }
+  
+      // Find the updated lessons for the specific section
+      const updatedSection = updatedSections.find(section => section.id === sectionId);
+      const updatedLessons = updatedSection ? updatedSection.lessons : [];
+  
+      // Prepare the update for Firebase
+      const updates = { [`courses/${course.id}/sections/${sectionId}/lessons`]: updatedLessons };
+  
+      // Update Firebase with the modified lessons
+      console.log(updates)
+      await update(ref(db), updates);
+  
+      // Update the local state
       setCourse(prev => prev ? { ...prev, sections: updatedSections } : null);
+  
+      // Display success message
       setSuccessMessage('Lesson deleted successfully!');
     } catch (e) {
       console.error(e);
       setError('Failed to delete lesson. Please try again.');
     }
   };
+  
+  
 
   const handleDeleteQuiz = (sectionId: string, lessonId: string, quizId: string) => {
     if (!course) return;
@@ -319,10 +348,31 @@ export default function EditCourse() {
   const handleVideoUpload = async (sectionId: string, lessonId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !course) return;
+    
     setIsUploading(true);
     setUploadProgress(0);
+    
     try {
-      const url = await uploadToS3(file, 'course-videos');
+      // 1. Find the existing video URL
+      let prevVideoUrl = '';
+      course.sections.forEach(section => {
+        if (section.id === sectionId) {
+          const lesson = section.lessons.find(lesson => lesson.id === lessonId);
+          if (lesson) {
+            prevVideoUrl = lesson.videoUrl; // Capture the previous video URL
+          }
+        }
+      });
+  
+      // 2. Delete the existing video from S3 (if there is a previous video URL)
+      if (prevVideoUrl) {
+        await deleteFromS3(prevVideoUrl);
+      }
+  
+      // 3. Upload the new video to S3
+      const newVideoUrl = await uploadToS3(file, 'course-videos');
+  
+      // 4. Update the lesson with the new video URL
       setCourse(prev => {
         if (!prev) return null;
         return {
@@ -332,13 +382,15 @@ export default function EditCourse() {
               ? {
                   ...section,
                   lessons: section.lessons.map(lesson =>
-                    lesson.id === lessonId ? { ...lesson, videoUrl: url } : lesson
+                    lesson.id === lessonId ? { ...lesson, videoUrl: newVideoUrl } : lesson
                   )
                 }
               : section
           )
         };
       });
+  
+      // 5. Success message
       setSuccessMessage('Video uploaded successfully!');
     } catch (error) {
       console.error('Error uploading video:', error);
@@ -348,7 +400,9 @@ export default function EditCourse() {
       setUploadProgress(0);
     }
   };
-
+  
+  
+  
   const removeImage = async (index: number) => {
     if (!course) return;
     const imageUrl = course.imageFiles[index];
@@ -477,15 +531,8 @@ export default function EditCourse() {
         </div>
        
 
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-green-500 text-white p-4 rounded-md mb-6"
-          >
-            {successMessage}
-          </motion.div>
-        )}
+        <ErrorMessage message={error} />
+          <SuccessMessage message={successMessage} />
 
         <motion.div
           initial={{ opacity: 0 }}
