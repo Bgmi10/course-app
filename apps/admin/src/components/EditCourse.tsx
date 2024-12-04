@@ -227,6 +227,7 @@ export default function EditCourse() {
         // Delete all video files from S3 for this section
         await Promise.all(sectionToDelete?.lessons?.map(lesson => deleteFromS3(lesson?.videoUrl)));
       }
+      await update(ref(db, `courses/${course.id}/sections`), updatedSections);
       setCourse(prev => prev ? { ...prev, sections: updatedSections } : null);
       setSuccessMessage('Section deleted successfully!');
     } catch (e) {
@@ -253,6 +254,8 @@ export default function EditCourse() {
         }
         return section;
       });
+      //@ts-ignore
+      await update(ref(db, `courses/${course.id}/sections/${sectionId}/lessons`), updatedSections.find(section => section.id === sectionId)?.lessons);
       setCourse(prev => prev ? { ...prev, sections: updatedSections } : null);
       setSuccessMessage('Lesson deleted successfully!');
     } catch (e) {
@@ -439,12 +442,40 @@ export default function EditCourse() {
   return (
     <div className="min-h-screen  text-white p-6">
       <div className="max-w-4xl mx-auto bg-black/80 border border-slate-900 p-8 rounded-xl shadow-lg backdrop-blur-sm">
-
-        <motion.h1 initial={{ opacity: 0, y: -20 }}
+       <div className='flex items-center'>
+  
+    <button
+        onClick={()=> setEditMode(prev => !prev)}
+        className={`relative lg:inline-flex items-center h-8 sm: hidden  rounded-full w-[85px] transition-colors duration-300 focus:outline-none ${
+          editMode ? 'bg-blue-600' : 'bg-gray-200'
+        }`}
+        role="switch"
+        aria-checked={editMode}
+      >
+        <span className="sr-only">{editMode ? 'Disable edit mode' : 'Enable edit mode'}</span>
+        <motion.span
+          className={`inline-block w-6 h-6 transform rounded-full transition-transform duration-300 ${
+            editMode ? 'translate-x-9 bg-white' : 'translate-x-1 bg-blue-600'
+          }`}
+          layout
+          transition={{
+            type: 'spring',
+            stiffness: 700,
+            damping: 30
+          }}
+        />
+      </button>
+      <span className="ml-3 text-xs font-medium text-gray-200 sm: hidden lg:inline">
+        {editMode ? 'Editor Mode' : 'Viewer Mode'}
+      </span>
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }} className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center  bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug dark:bg-gradient-to-b dark:from-blue-600 dark:via-gray-600 dark:to-white">
         Edit Course
         </motion.h1>
+        </div>
+       
 
         {successMessage && (
           <motion.div
@@ -462,7 +493,7 @@ export default function EditCourse() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="space-y-6"
         >
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-4 gap-3">
             <button
               onClick={() => setEditMode(!editMode)}
               className={`px-4 py-2 rounded-md ${

@@ -2,7 +2,7 @@ import { FcGoogle } from "react-icons/fc";
 import React, { useState, useEffect, useRef } from 'react';
 import { validEmail } from "../../utils/validEmail";
 import { auth } from "../../utils/firebase";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
@@ -11,9 +11,8 @@ export default function Signin() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  
+  const googleProvider = new GoogleAuthProvider();
   const emailRef = useRef<any>();
   const passwordRef = useRef<any>();
 
@@ -70,6 +69,14 @@ export default function Signin() {
     login();
   };
 
+  const handleGoogleAuth = () => {
+    
+    signInWithPopup(auth, googleProvider).then((res : any) => {
+      navigate('/');
+    }).catch(e => console.log(e.code));
+      
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-[400px] space-y-6 p-8 rounded-xl bg-zinc-800 border border-zinc-700">
@@ -80,6 +87,7 @@ export default function Signin() {
         <button
           className="w-full flex justify-center py-2 rounded-md bg-zinc-700 border text-white border-zinc-600 hover:bg-zinc-600 hover:text-white"
           aria-label="Login with Google"
+          onClick={handleGoogleAuth}
         >
           <FcGoogle className="mr-2 h-5 w-5" />
           Google

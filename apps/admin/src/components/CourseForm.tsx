@@ -7,9 +7,6 @@
   import { uploadToS3 } from '../utils/s3upload';
   import { useDropzone } from 'react-dropzone';
 
-
-  // issue is when adding second section the prev lesson [0] is merging on section two 
-
   interface Quiz {
     id: string;
     question: string;
@@ -498,9 +495,13 @@
     return (
       <div className="min-h-screen text-white p-6 ">
         <div className="max-w-4xl mx-auto border border-slate-900 bg-black/40 p-8 rounded-xl shadow-lg backdrop-blur-sm">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center  bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug dark:bg-gradient-to-b dark:from-blue-600 dark:via-gray-600 dark:to-white">
+        <motion.h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center  bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug dark:bg-gradient-to-b dark:from-blue-600 dark:via-gray-600 dark:to-white"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        >
     Create New Course
-  </h1>
+  </motion.h1>
 
           {error && (
             <motion.div

@@ -7,10 +7,10 @@ import StudentsList from "./components/StudentList";
 import Signin from "./components/auth/Signin";
 import NotFound from "./components/NotFound";
 import ProtectedRoutes from "./components/ProtectedRoutes";
-import Events from "./components/Events";
 import { useContext, useEffect } from "react";
 import AuthContext from "./context/AuthContext";
 import EditCourse from "./components/EditCourse";
+import EventsCreation from "./components/EventsCreation";
 
 
 function App() {
@@ -34,7 +34,7 @@ function App() {
           <Route path="/create-course" element={ <CourseForm /> } />
           <Route path="/view-courses" element={ <Courses /> } />
           <Route path="/student-list" element={ <StudentsList /> } />
-          <Route path="/events" element={ <Events /> } />
+          <Route path="/events" element={ <EventsCreation /> } />
           <Route path="/edit-course/:id" element={ <EditCourse /> } />
           </Route>
           {<Route path="/signin" element={ <Signin /> } />}
