@@ -1,5 +1,5 @@
 import { useState, useContext} from 'react';
-import { FaBars, FaTimes, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaTicketAlt, FaUserCircle } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaTicketAlt, FaUserCircle, FaUpload } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
@@ -23,6 +23,9 @@ export const Header = () => {
         <span className="text-2xl font-bold text-stone-500 mt-[-10px]">SecX</span>
 
         <nav className="hidden md:flex gap-8 items-center">
+          <Link to="/upload-videos" className=" text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
+            <FaUpload /> <span>Upload videos</span>
+          </Link>
           <Link to="/create-course" className=" text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
             <FaChalkboardTeacher /> <span>Create Course</span>
           </Link>
@@ -58,7 +61,10 @@ export const Header = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 md:hidden flex flex-col gap-4 text-center "
         >
-         <Link to="/create-course" className="justify-center text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
+          <Link to="/upload-videos" className=" text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
+            <FaUpload /> <span>Upload videos</span>
+          </Link>
+          <Link to="/create-course" className="justify-center text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
             <FaChalkboardTeacher /> <span>Create Course</span>
           </Link>
           <Link to="/view-courses" className="justify-center flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">

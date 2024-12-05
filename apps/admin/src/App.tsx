@@ -11,6 +11,7 @@ import { useContext, useEffect } from "react";
 import AuthContext from "./context/AuthContext";
 import EditCourse from "./components/EditCourse";
 import EventsCreation from "./components/EventsCreation";
+import UploadVideoToS3 from "./components/UploadVideoToS3";
 
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
           <Route path="/student-list" element={ <StudentsList /> } />
           <Route path="/events" element={ <EventsCreation /> } />
           <Route path="/edit-course/:id" element={ <EditCourse /> } />
+          <Route path="/upload-videos" element={ <UploadVideoToS3 /> } />
           </Route>
           {<Route path="/signin" element={ <Signin /> } />}
           <Route path="*" element={ <NotFound /> } />

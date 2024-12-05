@@ -206,10 +206,10 @@ export default function EditCourse() {
     if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) return;
     setIsLoading(true);
     try {
-      //await Promise.all(course?.imageFiles?.map(imageUrl => imageUrl && deleteFromS3(imageUrl)));
-      // await Promise.all(course?.sections?.flatMap(section =>
-      //   section?.lessons?.map(lesson => lesson?.videoUrl && deleteFromS3(lesson?.videoUrl))
-      // ));
+      await Promise.all(course?.imageFiles?.map(imageUrl => deleteFromS3(imageUrl)));
+      await Promise.all(course?.sections?.flatMap(section =>
+        section?.lessons?.map(lesson => deleteFromS3(lesson?.videoUrl))
+      ));
       await remove(ref(db, `courses/${id}`));
       setSuccessMessage('Course deleted successfully!');
       navigate('/view-courses')
@@ -451,15 +451,16 @@ export default function EditCourse() {
   if (isLoading) {
     return (
       <div className="min-h-screen text-white flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl font-bold"
-        >
-          Loading...
-        </motion.div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="text-4xl font-bold flex items-center"
+      >
+        <Loader2Icon className="w-10 h-10 mr-4 animate-spin" />
+        Loading...
+      </motion.div>
+    </div>
     );
   }
 
