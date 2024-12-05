@@ -19,10 +19,9 @@ const S3 = new S3Client({
 })
 
 export const uploadToS3 = async (file: File, folderName: string): Promise<string> => {
-  const fileName = `${folderName}/${Date.now()}-${file.name}`;
   const params: AWS.S3.PutObjectRequest = {
     Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
-    Key: fileName,
+    Key: folderName,
     Body: file,
     ContentType: file.type,
   };
@@ -76,3 +75,39 @@ export const FetchFoldersFromS3 = async (bucketName: string, prefix: string = ''
     throw new Error('Failed to fetch folders from S3');
   }
 };
+
+
+
+export const deleteFolderFromS3 = async (folderName : string) => {
+   
+  if(folderName === ''){
+    return;
+  }
+
+  const decodedUrl = decodeURIComponent(folderName);  
+  const params = {
+    Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
+    Prefix : decodedUrl
+  }
+
+  try {
+    const listedObjects = await s3.listObjectsV2(params).promise();
+
+    if(listedObjects.Contents && listedObjects.Contents.length > 0 ){
+      
+      const deleteparams : AWS.S3.DeleteObjectRequest = {
+        Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
+        Delete: {
+          Objects : listedObjects.Contents.map((i) => ({ Key : i.Key})),
+          Quiet: false
+        }
+      }
+      
+      await s3.deleteObjects(deleteparams).promise();
+    }
+  }
+  catch(e){
+    console.log(e);
+    console.log('err while deleting the folder objects in s3')
+  }
+}

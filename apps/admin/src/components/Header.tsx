@@ -61,7 +61,7 @@ export const Header = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mt-4 md:hidden flex flex-col gap-4 text-center "
         >
-          <Link to="/upload-videos" className=" text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
+          <Link to="/upload-videos" className="justify-center text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2">
             <FaUpload /> <span>Upload videos</span>
           </Link>
           <Link to="/create-course" className="justify-center text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
