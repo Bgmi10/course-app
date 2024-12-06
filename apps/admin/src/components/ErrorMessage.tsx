@@ -1,10 +1,16 @@
-import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { motion } from 'framer-motion';
 
 export const ErrorMessage = ({ message }: { message: string }) => (
-   <> {message && <div className="bg-red-100 border mb-5 border-red-400 text-red-700 px-4 py-3 rounded relative flex items-center" role="alert">
-      <FontAwesomeIcon icon={faExclamationCircle} className="mr-2" />
-      <span className="block sm:inline">{message}</span>
-    </div>}
+   <> { message && 
+       <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="bg-red-500 text-white p-3 rounded-md mb-4"
+       >
+      {message}
+      </motion.div> 
+      }
+    
    </>
   );

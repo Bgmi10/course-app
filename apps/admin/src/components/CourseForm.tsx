@@ -228,9 +228,6 @@ export default function CourseForm() {
       const courseRef = ref(db, "courses/" + courseId);
       const finalCourse: Course = {
         ...course,
-        id: courseId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       };
 
       await set(courseRef, finalCourse);
@@ -525,7 +522,7 @@ export default function CourseForm() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
-                      onClick={(e) => {
+                      onClick={(e: any) => {
                         e.stopPropagation(); 
                         setSelectedSectionId(section.id);
                         setSelectedLessonId(lesson.id);
