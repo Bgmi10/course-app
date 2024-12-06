@@ -9,6 +9,7 @@ import { uploadToS3, deleteFromS3 } from '../utils/s3upload';
 import { useDropzone } from 'react-dropzone';
 import { ErrorMessage } from './ErrorMessage';
 import { SuccessMessage } from './SuccessMessage';
+import { Loader2Icon } from 'lucide-react';
 
 
 // bug in deleting the lessons in firebase && issue in deleting the whole course when its empty of aws video url
@@ -54,8 +55,8 @@ export default function EditCourse() {
   const [editMode, setEditMode] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -728,6 +729,7 @@ export default function EditCourse() {
                               {lesson?.videoUrl && (
                                 <div className="aspect-w-16 aspect-h-9">
                                   <video src={lesson.videoUrl} controls className="rounded-md" />
+                                  <img src={lesson?.videoUrl} />
                                 </div>
                               )}
                             </>

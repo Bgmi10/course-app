@@ -5,6 +5,8 @@ import { FolderIcon, UploadIcon, PlusIcon, FolderPlusIcon, Loader2Icon, Trash } 
 import { SuccessMessage } from './SuccessMessage';
 import { ErrorMessage } from './ErrorMessage';
 
+// here implement a cache for fetching folders from 3 use a tanstan query 
+
 export default function UploadVideoToS3() {
   const [userInput, setUserInput] = useState<string>('');
   const [subfoldername, setSubFolderName] = useState<Record<number, string>>({});
@@ -12,13 +14,11 @@ export default function UploadVideoToS3() {
   const [message, setMessage] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  console.log(userFolders);
-
+  
   useEffect(() => {
     const fetchS3Folders = async () => {
       try {
-        const folders = await FetchFoldersFromS3('sec-xx');
+        const { folders } = await FetchFoldersFromS3('sec-xx');
         setUserFolders(folders);
       } catch (error) {
         console.error('Error fetching folders:', error);

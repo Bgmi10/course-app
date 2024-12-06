@@ -53,28 +53,40 @@ export const deleteFromS3 = async (fileUrl: string): Promise<void> => {
 };
 
 
-export const FetchFoldersFromS3 = async (bucketName: string, prefix: string = ''): Promise<string[]> => {
+export const FetchFoldersFromS3 = async (
+  bucketName: string, 
+  prefix: string = '', 
+  delimiter: string = '/'
+): Promise<{ folders: string[], files: string[] }> => {
+
+  // bug is showing the recersive folders even, though it wasn`t in s3 
   try {
     const params = {
       Bucket: bucketName,
       Prefix: prefix,     
-      Delimiter: '/'        
+      Delimiter: delimiter        
     };
     
     const command = new ListObjectsV2Command(params);
     const data = await S3.send(command);
-    const folders = data?.CommonPrefixes?.map((item) => item.Prefix) || [];
+    
+    const folders = (data?.CommonPrefixes?.map((item) => item.Prefix) || []).filter((prefix): prefix is string => !!prefix);
+    
+    const files = (data?.Contents?.map((i) => i.Key || '') || []).filter((key): key is string => !!key);
 
-    for(const folder of folders){
-      const nested_folders = await FetchFoldersFromS3(bucketName, folder);
-      folders.push(...nested_folders);
+    for (const folder of folders) {
+      const nested = await FetchFoldersFromS3(bucketName, folder);
+      folders.push(...nested.folders);
     }
-    return folders;
+
+    return { folders, files };
   } catch (e) {
     console.error('Error fetching folders from S3:', e);
     throw new Error('Failed to fetch folders from S3');
   }
 };
+
+
 
 
 

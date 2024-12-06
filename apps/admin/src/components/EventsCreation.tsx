@@ -14,9 +14,8 @@ export default function EventsCreation (){
        Event Creation
      </motion.h1>
      </div>
-     <div className='justify-center flex'>
+     <div className='justify-center flex text-white'>
         <div>
-          
         </div>
      </div>
      </>
