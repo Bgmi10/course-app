@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowLeft, faArrowRight, faCheck, faUpload, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { ref, set } from 'firebase/database'
 import { db } from '../utils/firebase'
-import { uploadToS3 } from '../utils/s3upload'
+import { deleteFromS3, uploadToS3 } from '../utils/s3upload'
 import { useDropzone } from 'react-dropzone'
 import { ErrorMessage } from './ErrorMessage'
 import { SuccessMessage } from './SuccessMessage'
@@ -19,7 +19,7 @@ interface Form {
   createdBy: string
   startTime: string
   endTime: string
-  thumbnail: string
+  thumbnail: string[]
   date: string
   startTimeAMPM: 'AM' | 'PM';
   endTimeAMPM: 'AM' | 'PM';
@@ -37,11 +37,12 @@ export default function EventCreation() {
     createdBy: '',
     startTime: '',
     endTime: '',
-    thumbnail: '',
+    thumbnail: [],
     date: '',
     startTimeAMPM: 'AM',
     endTimeAMPM: 'PM',
-  })
+  });
+  console.log(form.thumbnail)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -73,9 +74,9 @@ export default function EventCreation() {
     setIsUploading(true)
     setUploadProgress(0)
     try {
-      const file = acceptedFiles[0]
-      const url = await uploadToS3(file, 'eventsThumbnail')
-      setForm(prev => ({ ...prev, thumbnail: url }))
+      const url = acceptedFiles.map((i) => uploadToS3(i,'events-thumbnails'));
+      const urls = await Promise.all(url);
+      setForm(prev => ({ ...prev, thumbnail: [...prev.thumbnail, urls]}));
       setSuccess('Thumbnail uploaded successfully!')
     } catch (error) {
       console.error('Error uploading thumbnail:', error)
@@ -116,7 +117,7 @@ export default function EventCreation() {
         createdBy: '',
         startTime: '',
         endTime: '',
-        thumbnail: '',
+        thumbnail: [],
         date: '',
         startTimeAMPM: 'AM',
         endTimeAMPM: 'PM',
@@ -259,15 +260,23 @@ export default function EventCreation() {
                 className="h-2 bg-blue-500 rounded-full"
               />
             )}
-            {form.thumbnail && (
+            {form.thumbnail.length > 0  && (
               <div className="relative group">
-                <img src={form.thumbnail} alt="Event thumbnail" className="w-full h-48 object-cover rounded-md" />
-                <button
-                  onClick={() => setForm(prev => ({ ...prev, thumbnail: '' }))}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
+                {form.thumbnail?.map((i, index) =>
+                <>
+                <div key={index} className='m-3 p-1'>
+                 <img src={i} alt="Event thumbnail" className="w-60 h-32 rounded-md" />
+                 <button
+                   onClick={async () => {await deleteFromS3(i);
+                    setForm(prev => ({ ...prev, thumbnail: [...prev.thumbnail.filter((item) => item !== i)]}))}}
+                   className="top-4 mt-4 right-2 bg-red-500  text-white rounded-full p-2 group-hover:opacity-100 transition-opacity duration-300"
+                 >
+                   <FontAwesomeIcon icon={faTimes} />
+                 </button>
+                 </div>
+
+                </>
+                )}
               </div>
             )}
           </motion.div>

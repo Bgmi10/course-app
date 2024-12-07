@@ -1,5 +1,5 @@
 import { useState, useContext} from 'react';
-import { FaBars, FaTimes, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaTicketAlt, FaUserCircle, FaUpload } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaTicketAlt, FaUserCircle, FaUpload, FaCalendarAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
@@ -37,6 +37,9 @@ export const Header = () => {
           </Link>
           <Link to="/events" className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">
             <FaTicketAlt/> <span>Events planning</span>
+          </Link>
+           <Link to="/events-management" className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition-colors">
+           <FaCalendarAlt /> <span>Events Management</span>
           </Link>
           <div className="flex items-center gap-4">
           {isauthenticated ?   <span onClick={() => Logout()} className='cursor-pointer text-sm font-medium'>Logout <FontAwesomeIcon icon={faSignOut} /></span> : <button className="bg-blue-400 p-2 w-32 font-medium rounded-lg text-white hover:bg-blue-500 transition-colors" onClick={() => window.location.href = '/signin'}>

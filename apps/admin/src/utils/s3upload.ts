@@ -19,9 +19,12 @@ const S3 = new S3Client({
 })
 
 export const uploadToS3 = async (file: File, folderName: string): Promise<string> => {
+
+  const fileName = `${Date.now()}_${file.name}`;
+  const key = `${folderName}/${fileName}`
   const params: AWS.S3.PutObjectRequest = {
     Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
-    Key: folderName,
+    Key: key,
     Body: file,
     ContentType: file.type,
   };

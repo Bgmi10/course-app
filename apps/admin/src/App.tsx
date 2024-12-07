@@ -12,6 +12,8 @@ import AuthContext from "./context/AuthContext";
 import EditCourse from "./components/EditCourse";
 import EventsCreation from "./components/EventsCreation";
 import UploadVideoToS3 from "./components/UploadVideoToS3";
+import EventManagement from "./components/EventManagement";
+import EventsEdit from "./components/EventsEdit";
 
 
 function App() {
@@ -38,6 +40,8 @@ function App() {
           <Route path="/events" element={ <EventsCreation /> } />
           <Route path="/edit-course/:id" element={ <EditCourse /> } />
           <Route path="/upload-videos" element={ <UploadVideoToS3 /> } />
+          <Route path="/events-management" element={ <EventManagement /> } />
+          <Route path="/events-edit/:id" element={ <EventsEdit /> } />
           </Route>
           {<Route path="/signin" element={ <Signin /> } />}
           <Route path="*" element={ <NotFound /> } />
