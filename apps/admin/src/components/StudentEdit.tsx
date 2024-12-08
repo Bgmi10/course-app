@@ -1,118 +1,116 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown, faAngleUp, faPencilAlt, faTrash, faUpload, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPencilAlt, faTrash, faUpload, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { child, get, ref, update, remove } from "firebase/database";
 import { db } from "../utils/firebase";
 import { uploadToS3, deleteFromS3 } from '../utils/s3upload';
 import { useDropzone } from 'react-dropzone';
-import { ErrorMessage } from './ErrorMessage';
-import { SuccessMessage } from './SuccessMessage';
-import { Loader2Icon } from 'lucide-react';
 import Loader from './Loder';
+import { ErrorMessage } from './ErrorMessage';
+import { UserCircle } from 'lucide-react';
 
-interface Data{
-    id: string;
-    capacity: number;
-    createdBy: string;
-    date: string;
-    description: string;
-    endTime: string;
-    endTimeAMPM: string;
-    location: string;
-    startTime: string;
-    startTimeAMPM: string;
-    status: string;
-    thumbnail: string[];
-    title: string;
+interface User {
+  age: string;
+  country: string;
+  course: string;
+  designation: string;
+  company: string;
+  email: string;
+  experience: string;
+  firstName: string;
+  id: string;
+  instituteName: string;
+  lastName: string;
+  phoneNumber: string;
+  role: string;
+  specialization: string;
+  password: string;
+  profession: string;
+  state: string;
+  profileUrl: string;
+  isOnline: boolean;
+  suspended: boolean;
 }
 
-export default function EventsEdit() {
+export default function StudentEdit() {
   const { id } = useParams<{ id: string }>();
-  const [data, setData] = useState<Data | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const fetchUser = async () => {
       setIsLoading(true);
       try {
-        const snapshot = await get(child(ref(db), `events/${id}`));
-        if (snapshot.exists()) {
-          setData(snapshot.val());
-        } else {
-          setError('Event not found');
-        }
+        const snapshot = await get(child(ref(db), `Users/${id}`));
+        const value = snapshot.val();
+        setUser(value);
       } catch (e) {
         console.error(e);
-        setError('Failed to fetch event data. Please try again.');
+        setError('Failed to fetch user data. Please try again.');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchEvent();
+    fetchUser();
   }, [id]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setData(prev => prev ? { ...prev, [name]: value } : null);
+    setUser(prev => prev ? { ...prev, [name]: value } : null);
   };
 
-  const handleChangeStatus = (e: string) => {
-     setData(prev => prev ? {...prev, status: e} : null)
-  }
-
   const handleSave = async () => {
-    if (!data) return;
+    if (!user) return;
     setIsLoading(true);
     try {
-      await update(ref(db, `events/${id}`), data);
-      setSuccessMessage('Event updated successfully!');
+      await update(ref(db, `Users/${id}`), user);
+      setSuccessMessage('User updated successfully!');
       setEditMode(false);
     } catch (e) {
       console.error(e);
-      setError('Failed to update event. Please try again.');
+      setError('Failed to update user. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDeleteEvent = async () => {
-    if (!data) return;
-    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) return;
+  const handleDeleteUser = async () => {
+    if (!user) return;
+    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
     setIsLoading(true);
     try {
-      const urls = data?.thumbnail?.map((i) => deleteFromS3(i));
-      await Promise.all(urls);
-      await remove(ref(db, `events/${id}`));
-      setSuccessMessage('Event deleted successfully!');
-      navigate('/events-management');
+      if (user.profileUrl) {
+        await deleteFromS3(user.profileUrl);
+      }
+      await remove(ref(db, `Users/${id}`));
+      setSuccessMessage('User deleted successfully!');
+      // Redirect to users list or home page
     } catch (e) {
       console.error(e);
-      setError('Failed to delete event. Please try again.');
+      setError('Failed to delete user. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (!data) return;
+  const onDrop = async (acceptedFiles: File[]) => {
+    if (!user) return;
     setIsUploading(true);
     setUploadProgress(0);
     try {
-      const file = acceptedFiles[0];
-      const uploadFiles = acceptedFiles?.map((i) => uploadToS3(i, 'events-thumbnails'));
-      const urls = await Promise.all(uploadFiles);
-      //@ts-ignore
-      setData(prev => prev ? { ...prev, thumbnail: [...prev.thumbnail, urls]} : null);
-      setSuccessMessage('Image uploaded successfully!');
+      const file = acceptedFiles[0]; 
+      const url = await uploadToS3(file, 'profile-images');
+      setUploadProgress(100);
+      setUser(prev => prev ? { ...prev, profileUrl: url } : null);
+      setSuccessMessage('Profile image uploaded successfully!');
     } catch (error) {
       console.error('Error uploading image:', error);
       setError('Failed to upload image. Please try again.');
@@ -120,23 +118,35 @@ export default function EventsEdit() {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, [data]);
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
+  const removeProfileImage = async () => {
+    if (!user || !user.profileUrl) return;
+    try {
+      await deleteFromS3(user.profileUrl);
+      setUser(prev => prev ? { ...prev, profileUrl: '' } : null);
+      setSuccessMessage('Profile image removed successfully!');
+    } catch (error) {
+      console.error('Error removing image:', error);
+      setError('Failed to remove image. Please try again.');
+    }
+  };
+
   if (isLoading) {
     return (
-     <Loader />
+      <Loader />
     );
   }
 
   if (error) {
     return (
-      <ErrorMessage message={error}/>
+      <ErrorMessage message={error} />
     );
   }
 
-  if (!data) {
+  if (!user) {
     return (
       <div className="min-h-screen text-white flex items-center justify-center">
         <motion.div
@@ -145,10 +155,14 @@ export default function EventsEdit() {
           transition={{ duration: 0.5 }}
           className="text-4xl font-bold"
         >
-          Event not found
+          User not found
         </motion.div>
       </div>
     );
+  }
+
+  const handleSuspend = (value: boolean) => {
+    setUser((prev: any) => ({...prev, suspended: value}));
   }
 
   return (
@@ -185,12 +199,31 @@ export default function EventsEdit() {
             transition={{ duration: 0.5 }}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug dark:bg-gradient-to-b dark:from-blue-600 dark:via-gray-600 dark:to-white"
           >
-            Edit Event
+            Edit {user?.firstName}
           </motion.h1>
         </div>
 
-        <ErrorMessage message={error} />
-        <SuccessMessage message={successMessage} />
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-red-500 text-white p-4 rounded-md mb-4"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-green-500 text-white p-4 rounded-md mb-4"
+          >
+            {successMessage}
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -206,15 +239,15 @@ export default function EventsEdit() {
               } transition duration-300`}
             >
               <FontAwesomeIcon icon={editMode ? faSave : faPencilAlt} className="mr-2" />
-              {editMode ? 'Save Changes' : 'Edit Event'}
+              {editMode ? 'Save Changes' : user?.firstName}
             </button>
             {editMode && (
               <button
-                onClick={handleDeleteEvent}
-                className="px-4 py-2 bg-red-500   hover:bg-red-600 rounded-md transition duration-300"
+                onClick={handleDeleteUser}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-md transition duration-300"
               >
                 <FontAwesomeIcon icon={faTrash} className="mr-2" />
-                Delete Event
+                Delete {user?.firstName}
               </button>
             )}
           </div>
@@ -222,78 +255,68 @@ export default function EventsEdit() {
           <div className="space-y-4">
             <input
               type="text"
-              name="title"
-              value={data.title}
+              name="firstName"
+              value={user.firstName}
               onChange={handleInputChange}
-              placeholder="Event Title"
+              placeholder="First Name"
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={!editMode}
-            />
-            <textarea
-              name="description"
-              value={data.description}
-              onChange={handleInputChange}
-              placeholder="Event Description"
-              className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
               disabled={!editMode}
             />
             <input
               type="text"
-              name="location"
-              value={data.location}
+              name="lastName"
+              value={user.lastName}
               onChange={handleInputChange}
-              placeholder="Event Location"
+              placeholder="Last Name"
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!editMode}
             />
             <input
-              type="date"
-              name="date"
-              value={data.date}
+              type="email"
+              name="email"
+              value={user.email}
               onChange={handleInputChange}
+              placeholder="Email"
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!editMode}
             />
-            <div className="flex space-x-4">
-              <input
-                type="text"
-                name="startTime"
-                value={data.startTime}
-                onChange={handleInputChange}
-                className="w-1/2 p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={!editMode}
-              />
-              <span className="items-center flex font-serif">to</span>
-              <input
-                type="text"
-                name="endTime"
-                value={data.endTime}
-                onChange={handleInputChange}
-                className="w-1/2 p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={!editMode}
-              />
-            </div>
             <input
-              type="number"
-              name="capacity"
-              value={data.capacity}
+              type="text"
+              name="phoneNumber"
+              value={user.phoneNumber}
               onChange={handleInputChange}
-              placeholder="Event Capacity"
+              placeholder="Phone Number"
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!editMode}
             />
-          </div>
-
-          {
-            !editMode && <input value={data?.status} className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" disabled/>
-          }
-          
-          {
-            editMode && <select name="status" className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" disabled={!editMode} onChange={(e: any) => handleChangeStatus(e.target.value)} value={data?.status}>
-              <option>Opened</option>
-              <option>Closed</option>
+            <input
+              type="text"
+              name="country"
+              value={user.country}
+              onChange={handleInputChange}
+              placeholder="Country"
+              className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!editMode}
+            />
+            <input
+              type="text"
+              name="state"
+              value={user.state}
+              onChange={handleInputChange}
+              placeholder="State"
+              className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!editMode}
+            />
+            <select
+              name="suspended"
+              onChange={(e) => handleSuspend(e.target.value)}
+              className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!editMode}
+            >   {!editMode && <option>{user?.suspended ? "Suspended" : "Active"}</option>}
+                <option value={"true"}>Suspended</option>
+                <option value={"false"}>Active</option>
             </select>
-          }
+          </div>
 
           {editMode && (
             <div
@@ -304,7 +327,7 @@ export default function EventsEdit() {
             >
               <input {...getInputProps()} />
               <FontAwesomeIcon icon={faUpload} className="text-4xl mb-2 text-blue-400" />
-              <p className="text-gray-300">Drag 'n' drop event thumbnail here, or click to select file</p>
+              <p className="text-gray-300">Drag 'n' drop profile image here, or click to select file</p>
             </div>
           )}
 
@@ -316,29 +339,20 @@ export default function EventsEdit() {
             />
           )}
 
-          <div className="mt-4">
-            {data.thumbnail.length > 0 && (
-              <div className="relative group">
-                {
-                  data?.thumbnail.map((i, index) =>
-                  <div key={index}>
-                    <img src={i} alt="Event thumbnail" className="w-52 h-auto object-cover rounded-md m-1" />
-                    {editMode && <button
-                    onClick={
-                      async () => {
-                      await deleteFromS3(i);
-                      setData(prev => prev ? { ...prev, thumbnail: prev.thumbnail.filter((thumbnail, thumbIndex) => thumbIndex !== index) } : null);
-                    }}
-                    className=" ml-1 mt-2 top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    >
-                     <FontAwesomeIcon icon={faTimes} />
-                    </button>}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
+          {user.profileUrl ? (
+            <div className="relative group">
+              <img src={user.profileUrl} alt="Profile" className="w-full h-64 object-cover rounded-md" />
+              {editMode && (
+                <button
+                  onClick={removeProfileImage}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              )}
+            </div>
+
+          ) : <>{!editMode && <div> <UserCircle /> <span className='text-semibold text-red-500'>user profile not found upload one !</span></div>}</>}
 
           {editMode && (
             <div className="mt-8 flex justify-end">
@@ -356,3 +370,4 @@ export default function EventsEdit() {
     </div>
   );
 }
+

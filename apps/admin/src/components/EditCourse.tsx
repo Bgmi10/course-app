@@ -10,6 +10,7 @@ import { useDropzone } from 'react-dropzone';
 import { ErrorMessage } from './ErrorMessage';
 import { SuccessMessage } from './SuccessMessage';
 import { Loader2Icon } from 'lucide-react';
+import Loader from './Loder';
 
 
 // bug in deleting the lessons in firebase && issue in deleting the whole course when its empty of aws video url
@@ -451,32 +452,13 @@ export default function EditCourse() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen text-white flex items-center justify-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="text-4xl font-bold flex items-center"
-      >
-        <Loader2Icon className="w-10 h-10 mr-4 animate-spin" />
-        Loading...
-      </motion.div>
-    </div>
+      <Loader />
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen  text-white flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-red-500 text-2xl"
-        >
-          {error}
-        </motion.div>
-      </div>
+      <ErrorMessage message={error}/>
     );
   }
 

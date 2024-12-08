@@ -3,6 +3,7 @@ import { db } from "../utils/firebase";
 import { motion } from 'framer-motion';
 import { child, get, ref } from "firebase/database";
 import { Link } from "react-router-dom";
+import Loader from "./Loder";
 
 export default function EventManagement (){
 
@@ -41,6 +42,12 @@ export default function EventManagement (){
 
        fetch_events();
     },[]);
+
+    if(!data){
+        return(
+            <Loader />
+        )
+    }
 
     return(
      <>

@@ -6,6 +6,9 @@ import { ref, set } from "firebase/database";
 import { db } from "../utils/firebase";
 import { uploadToS3, FetchFoldersFromS3 } from '../utils/s3upload';
 import { useDropzone } from 'react-dropzone';
+import { bucketName, region_aws } from '../utils/contants';
+import { ErrorMessage } from './ErrorMessage';
+import { SuccessMessage } from './SuccessMessage';
 
 interface Quiz {
   id: string;
@@ -93,7 +96,7 @@ export default function CourseForm() {
 
   const fetchRootFolders = async () => {
     try {
-      const { folders } = await FetchFoldersFromS3('sec-xx');
+      const { folders } = await FetchFoldersFromS3(bucketName);
       setFolderStructure(folders.map(folder => ({ name: folder, type: 'folder' })));
     } catch (e) {
       console.error(e);
@@ -102,7 +105,7 @@ export default function CourseForm() {
 
   const fetchSubFolders = async (folderPath: string) => {
     try {
-      const { folders, files } = await FetchFoldersFromS3('sec-xx', folderPath, '/');
+      const { folders, files } = await FetchFoldersFromS3('sec-x', folderPath, '/');
       return [
         ...folders.map(folder => ({ name: folder, type: 'folder' as const })),
         ...files.map(file => ({ name: file, type: 'file' as const }))
@@ -316,7 +319,7 @@ export default function CourseForm() {
               ) : (
                 <button
                   onClick={() => {
-                    setCurrentLesson(prev => ({ ...prev, videoUrl: `https://sec-xx.s3.eu-north-1.amazonaws.com/${fullPath}` }));
+                    setCurrentLesson(prev => ({ ...prev, videoUrl: `https://${bucketName}.s3.${region_aws}.amazonaws.com/${fullPath}` }));
                     setShowS3Selector(false);
                   }}
                   className="flex items-center text-gray-300 hover:text-white ml-4"
@@ -600,27 +603,9 @@ export default function CourseForm() {
           Create New Course
         </motion.h1>
 
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="bg-red-500 text-white p-3 rounded-md mb-4"
-          >
-            {error}
-          </motion.div>
-        )}
+        <ErrorMessage message={error} />
 
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="bg-green-500 text-white p-3 rounded-md mb-4"
-          >
-            {successMessage}
-          </motion.div>
-        )}
+       <SuccessMessage message={successMessage} />
 
         <AnimatePresence mode="wait">
           {renderStep()}

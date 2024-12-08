@@ -103,7 +103,11 @@ export default function Courses() {
     return (
         <div className="min-h-screen bg-black text-white p-6">
             <div className="container mx-auto">
-                <motion.h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug bg-gradient-to-b from-blue-600 via-gray-600 to-white">
+                <motion.h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug bg-gradient-to-b from-blue-600 via-gray-600 to-white"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                >
                     Courses
                 </motion.h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10">

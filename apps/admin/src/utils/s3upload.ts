@@ -1,8 +1,9 @@
 import AWS from 'aws-sdk';
 import {ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
+import { region_aws } from './contants';
 
 AWS.config.update({
-  region: 'eu-north-1',
+  region: region_aws,
   accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID,
   secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY,
 });
@@ -10,7 +11,7 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 const S3 = new S3Client({
-    region: 'eu-north-1',
+    region: region_aws,
     credentials : {
     accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID,
     secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY

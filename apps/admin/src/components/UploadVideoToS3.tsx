@@ -4,6 +4,8 @@ import { FetchFoldersFromS3, deleteFolderFromS3, uploadToS3 } from '../utils/s3u
 import { FolderIcon, UploadIcon, PlusIcon, FolderPlusIcon, Loader2Icon, Trash } from 'lucide-react';
 import { SuccessMessage } from './SuccessMessage';
 import { ErrorMessage } from './ErrorMessage';
+import { bucketName } from '../utils/contants';
+import Loader from './Loder';
 
 // here implement a cache for fetching folders from 3 use a tanstan query 
 
@@ -18,7 +20,7 @@ export default function UploadVideoToS3() {
   useEffect(() => {
     const fetchS3Folders = async () => {
       try {
-        const { folders } = await FetchFoldersFromS3('sec-xx');
+        const { folders } = await FetchFoldersFromS3(bucketName);
         setUserFolders(folders);
       } catch (error) {
         console.error('Error fetching folders:', error);
@@ -82,17 +84,7 @@ export default function UploadVideoToS3() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen text-white flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-2xl sm:text-3xl md:text-4xl font-bold flex items-center"
-        >
-          <Loader2Icon className="w-8 h-8 sm:w-10 sm:h-10 mr-4 animate-spin" />
-          Loading...
-        </motion.div>
-      </div>
+      <Loader />
     );
   }
 
