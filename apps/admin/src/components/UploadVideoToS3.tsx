@@ -32,7 +32,7 @@ export default function UploadVideoToS3() {
     fetchS3Folders();
   }, []);
 
-  const handleCreateAFolder = (parentIndex: number | null = null) => {
+  const handleCreateAFolder = (parentIndex: any  = null) => {
     let folderName = parentIndex === null ? userInput : subfoldername[parentIndex] || '';
     
     if (!folderName) {

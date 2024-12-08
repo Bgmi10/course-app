@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk';
-import {ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
+import {DeleteObjectsCommand, ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
 import { region_aws } from './contants';
 
 AWS.config.update({
@@ -13,8 +13,8 @@ const s3 = new AWS.S3();
 const S3 = new S3Client({
     region: region_aws,
     credentials : {
-    accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY
+    accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID as string,
+    secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY as string
   }
 
 })
@@ -63,7 +63,6 @@ export const FetchFoldersFromS3 = async (
   delimiter: string = '/'
 ): Promise<{ folders: string[], files: string[] }> => {
 
-  // bug is showing the recersive folders even, though it wasn`t in s3 
   try {
     const params = {
       Bucket: bucketName,
@@ -78,7 +77,7 @@ export const FetchFoldersFromS3 = async (
     
     const files = (data?.Contents?.map((i) => i.Key || '') || []).filter((key): key is string => !!key);
 
-    for (const folder of folders) {
+    for (const folder of folders.slice()) {
       const nested = await FetchFoldersFromS3(bucketName, folder);
       folders.push(...nested.folders);
     }
@@ -93,37 +92,30 @@ export const FetchFoldersFromS3 = async (
 
 
 
-
-export const deleteFolderFromS3 = async (folderName : string) => {
-   
-  if(folderName === ''){
-    return;
-  }
-
-  const decodedUrl = decodeURIComponent(folderName);  
+export const deleteFolderFromS3 = async (folderName: string) => {
+  if (folderName === '') return;
+  const decodeUrl = decodeURIComponent(folderName);
   const params = {
     Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
-    Prefix : decodedUrl
-  }
+    Prefix: decodeUrl,
+  };
 
   try {
-    const listedObjects = await s3.listObjectsV2(params).promise();
+    const listedObjects = await S3.send(new ListObjectsV2Command(params));
 
-    if(listedObjects.Contents && listedObjects.Contents.length > 0 ){
-      
-      const deleteparams : AWS.S3.DeleteObjectRequest = {
+    if (listedObjects.Contents && listedObjects.Contents.length > 0) {
+      const deleteParams = {
         Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
         Delete: {
-          Objects : listedObjects.Contents.map((i) => ({ Key : i.Key})),
-          Quiet: false
-        }
-      }
-      
-      await s3.deleteObjects(deleteparams).promise();
+          Objects: listedObjects.Contents.map((item) => ({ Key: item.Key })),
+          Quiet: true,
+        },
+      };
+
+      await S3.send(new DeleteObjectsCommand(deleteParams));
     }
+  } catch (error) {
+    console.error('Error deleting folder objects from S3:', error);
+    throw new Error('Folder deletion failed');
   }
-  catch(e){
-    console.log(e);
-    console.log('err while deleting the folder objects in s3')
-  }
-}
+};

@@ -309,7 +309,7 @@ export default function StudentEdit() {
             />
             <select
               name="suspended"
-              onChange={(e) => handleSuspend(e.target.value)}
+              onChange={(e: any) => handleSuspend(e.target.value)}
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!editMode}
             >   {!editMode && <option>{user?.suspended ? "Suspended" : "Active"}</option>}

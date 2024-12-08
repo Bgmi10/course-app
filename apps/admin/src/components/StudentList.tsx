@@ -108,7 +108,7 @@ export default function StudentsList() {
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center lg:space-x-4 sm: space-x-1">
             <button
               onClick={() => setFilter("all")}
               className={`px-4 py-2 rounded-md transition duration-200 ${

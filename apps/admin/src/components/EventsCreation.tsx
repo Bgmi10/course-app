@@ -8,6 +8,7 @@ import { deleteFromS3, uploadToS3 } from '../utils/s3upload'
 import { useDropzone } from 'react-dropzone'
 import { ErrorMessage } from './ErrorMessage'
 import { SuccessMessage } from './SuccessMessage'
+import { useNavigate } from 'react-router-dom'
 
 interface Form {
   title: string
@@ -45,8 +46,9 @@ export default function EventCreation() {
   console.log(form.thumbnail)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const navigate = useNavigate();
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -76,7 +78,7 @@ export default function EventCreation() {
     try {
       const url = acceptedFiles.map((i) => uploadToS3(i,'events-thumbnails'));
       const urls = await Promise.all(url);
-      setForm(prev => ({ ...prev, thumbnail: [...prev.thumbnail, urls]}));
+      setForm((prev : any) => ({ ...prev, thumbnail: [...prev.thumbnail, urls]}));
       setSuccess('Thumbnail uploaded successfully!')
     } catch (error) {
       console.error('Error uploading thumbnail:', error)
@@ -107,6 +109,7 @@ export default function EventCreation() {
         endTime: formattedEndTime,
       })
       setSuccess('Event created successfully!')
+      navigate('/events-management')
       setForm({
         title: '',
         description: '',

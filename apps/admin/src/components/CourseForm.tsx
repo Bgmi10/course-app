@@ -80,8 +80,8 @@ export default function CourseForm() {
     options: ["", "", "", ""],
     answer: ""
   });
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
