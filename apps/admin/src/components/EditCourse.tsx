@@ -12,9 +12,6 @@ import { SuccessMessage } from './SuccessMessage';
 import { Loader2Icon } from 'lucide-react';
 import Loader from './Loder';
 
-
-// bug in deleting the lessons in firebase && issue in deleting the whole course when its empty of aws video url
-
 interface Quiz {
   id: string;
   question: string;
