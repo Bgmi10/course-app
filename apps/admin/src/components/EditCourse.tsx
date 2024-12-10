@@ -429,6 +429,7 @@ export default function EditCourse() {
       options: ['', '', '', ''],
       answer: ''
     };
+
     setCourse(prev => {
       if (!prev) return null;
       return {
@@ -439,7 +440,7 @@ export default function EditCourse() {
                 ...section,
                 lessons: section.lessons.map(lesson =>
                   lesson.id === lessonId
-                    ? { ...lesson, quizzes: [...lesson.quizzes, newQuiz] }
+                    ? { ...lesson, quizzes: lesson.quizzes ? [...lesson.quizzes, newQuiz] : [newQuiz] }
                     : lesson
                 )
               }

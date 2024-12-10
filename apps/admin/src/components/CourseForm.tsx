@@ -90,6 +90,8 @@ export default function CourseForm() {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [showS3Selector, setShowS3Selector] = useState<boolean>(false);
 
+  console.log(course);
+
   useEffect(() => {
     fetchRootFolders();
   }, []);
