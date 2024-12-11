@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight} from 'lucide-react'
 import { useState } from 'react'
 import Header from './Header'
+import SlideButton from './SlideButtons'
 
 export default function LandingPage(){
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [secondslide, setSecondSlide] = useState(0);
 
   const features = [
     {
@@ -26,6 +28,37 @@ export default function LandingPage(){
       description: 'Advanced AI technology to enhance your learning experience'
     }
   ]
+
+  const effectiveLearing = [
+    {
+      id: "1",
+      title: "Moniter your interview skills",
+      description: "Easily track and manage your verbal and technical skills",
+      button: "AI Interview Taker",
+      imageUrl: "https://s3-alpha-sig.figma.com/img/4dc4/55e4/663f228bea4c2a51739f7b9bdb4fa516?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=fbb0HUe88zOicsVMG4ECPH7ly6UEa-J37k7jflSu32TLIO7fJRFi~-XJ7krsujnFrMSms6rj4xzqukrNMgL~qf3b6W6pRpXKiN4SLdbuwUz7gdzvyP9SR7jPf6FkNZK-chQPvvFjcy5DmQEagaBLclLt3gSGuDPLrj-feeZnDL-kNK3giW~LIV2MK~O9opuGo38dCsdAjoUxxXWGs84Fzl29oIFY5FAMFNtdPRT6UACR2MYgo~Gksqo2foEYH7n5aWR9yYPEmJFQ6KDP3NuHxGpjfkUIkSkv8CLnVQnVw2qpgiUpzYPkDQZ3Ujiv0tdMYt11CUYmGwsTsWMmZh1YSQ__"
+    },
+    {
+      id: "2",
+      title: "Moniter your bugs reports",
+      description: "Easily track and manage your engagements on bug bounty programs",
+      button: "Checklist",
+      imageUrl: "https://s3-alpha-sig.figma.com/img/71af/de8b/f0893a435db9a42fce168d073279c65a?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=hBkPKkYSB~9yh4bg3W9~f7KHk5SVBRZr76U3TZ~fypiCeFyXc90FLu2S0S7b5kLrMKG6NLex7j7BSSYpOHBGGvyrrG3VgXNHFWN5377vAjz2Wihkj1yvwpRwWxib98Ku4HrbMByAyQVS50x8-5MXRzvZhOnPGsSZuGtT4roejzNJCdgZaaylHLc3QEDqDwpzI4n0274DswV0Fys1c8dmTP3Lbh3rXNZ26IylloAE8D~0yOHmfhXZj5UvcC-MKexHokLxc2SAj17qML~mR2qFd-iDW30kaElp2xLwhP8weCAKc8D814jiSHVS~3KdDpThAIZ1fbxFgZi0i~TRdWEh1A__"
+    },
+    {
+      id: "3",
+      title: "Moniter your bugs reports",
+      description: "Easily track and manage your engagements on bug bounty programs",
+      button: "Checklist",
+      imageUrl: "https://s3-alpha-sig.figma.com/img/71af/de8b/f0893a435db9a42fce168d073279c65a?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=hBkPKkYSB~9yh4bg3W9~f7KHk5SVBRZr76U3TZ~fypiCeFyXc90FLu2S0S7b5kLrMKG6NLex7j7BSSYpOHBGGvyrrG3VgXNHFWN5377vAjz2Wihkj1yvwpRwWxib98Ku4HrbMByAyQVS50x8-5MXRzvZhOnPGsSZuGtT4roejzNJCdgZaaylHLc3QEDqDwpzI4n0274DswV0Fys1c8dmTP3Lbh3rXNZ26IylloAE8D~0yOHmfhXZj5UvcC-MKexHokLxc2SAj17qML~mR2qFd-iDW30kaElp2xLwhP8weCAKc8D814jiSHVS~3KdDpThAIZ1fbxFgZi0i~TRdWEh1A__"
+    }
+  ];
+
+  const itemPerSection = 2;
+  const totalSections = Math.ceil(effectiveLearing.length / itemPerSection);
+
+  const nextSlide = () => {
+    setSecondSlide((prev) => (prev + 1) % totalSections);
+  }
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white relative overflow-hidden mb-40">
@@ -293,17 +326,7 @@ export default function LandingPage(){
               </motion.div>
             </div>
             
-            <div className="flex justify-center gap-2 mt-8">
-              {features.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    currentSlide === index ? "bg-white" : "bg-gray-600"
-                  }`}
-                />
-              ))}
-            </div>
+           <SlideButton setCurrentSlide={setCurrentSlide} currentSlide={currentSlide} features={features} />
          
         </div>
         
@@ -332,12 +355,45 @@ export default function LandingPage(){
               </div>
               <div className='m-4 p-4'>
                  <img src='https://s3-alpha-sig.figma.com/img/e986/713e/6a7983e67e22500ef0068f6b207a4ec1?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=dVzqptRe~U1~81qEcWpptS869tmVkl2CZmVsAP5x1zW7nOuiWwJ3xbdmLgY5bCrlG0vE~XJPVNa3AsOBjkVG-ZazBTGzPiO687s3-B2mTys5rKVQVc4uEnTdzwIcKXnL1kTSJzSxnbCKKU-80rXtklgOBH3jPytoQWsNyR8MApan~RhdOEpWZc5KJAt1szAxBWRWgpxl-JDVCsTjHeGWKuyZRc9H8MjLfT9vsr0rTdxpS9xcvwsj5uCCo2ZTeoLs0faMdc1FGYktXVi6eIptXduhGruXLC-LpmkibC4r46VS1xxKuLyYRyaqkkTHm8i2duYW-RXr1JO9REClvqOIqA__' className='h-60 w-[452px] rounded-md'/>
-                 <div className='border-[#E8E8E8] border  rounded-2xl text-center p-2 w-[389px] h-[59px] mt-7 ml-[35px]'>
+                 <div className='border-[#E8E8E8] border-2  rounded-2xl text-center p-2 w-[389px] h-[59px] mt-7 ml-[35px]'>
                    <span className='bg-transparent bg-clip-text text-transparent w-full xl:leading-snug bg-gradient-to-r from-[#381CA5] to-[#00D1FF] text-4xl font-semibold'>AI CV Rater</span>
                  </div>
               </div>
            </motion.div>
         </motion.div>
+        
+        <motion.div className='gap-7 mt-10 ml-20 flex overflow-hidden'
+         key={secondslide}
+         initial={{ opacity: 0, x: -200 }}
+         animate={{ opacity: 1, x: 0 }}
+         exit={{ opacity: 0, x: 200 }}
+         transition={{ duration: 0.5 }}
+        >
+
+           {
+            effectiveLearing.map((i) => (
+              <div key={i.id} className='border p-5 h-[381px] w-[452px] flex rounded-3xl flex-col  border-gray-700'>
+                <img src={i.imageUrl} alt="img"  className='w-96 h-52 rounded-lg'/>
+                <span className='text-white font-normal text-xl mt-3'>{i.title}</span> 
+                <span className='text-[#979797] text-xs'>{i.description}</span>
+                <div className='border-[#E8E8E8] border-2 ml-4  rounded-2xl text-center p-2 w-[389px] h-[59px] mt-3 '>
+                  <span className='bg-transparent bg-clip-text text-transparent w-full xl:leading-snug bg-gradient-to-r from-[#381CA5] to-[#00D1FF] text-3xl font-semibold'>{i.button}</span>
+                 </div>
+              </div>
+            ))
+           }
+            <button
+             onClick={nextSlide}
+             className="absolute right-60 bottom-[150px] -translate-y-1/2 z-10 p-2 rounded-full border border-gray-800 border-t-[2px] border-l-[2px] border-b-gray-900 border-r-gray-900 shadow-md hover:shadow-lg hover:bg-gray-800 transition-all duration-300 ease-in-out"
+             >
+             <ArrowRight className="w-6 h-6" />
+            </button>
+            
+        </motion.div>
+        <div className='flex justify-center mr-[267px]'>
+          <SlideButton features={effectiveLearing} currentSlide={secondslide} setCurrentSlide={setSecondSlide}/>
+        </div>
+       
     </div>
   
 )
