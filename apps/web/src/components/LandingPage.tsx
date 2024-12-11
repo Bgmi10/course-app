@@ -2,57 +2,14 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight} from 'lucide-react'
 import { useState } from 'react'
 import Header from './Header'
-import SlideButton from './SlideButtons'
+import SlideButton from './SlideButtons';
+import png from '../imgs/Capture.png';
+import { effectiveLearing, features } from '../utils/constants';
+import { RenderEffectiveRenderSlide } from './RenderEffectiveRenderSlide';
 
 export default function LandingPage(){
   const [currentSlide, setCurrentSlide] = useState(0);
   const [secondslide, setSecondSlide] = useState(0);
-
-  const features = [
-    {
-      color: 'bg-blue-500',
-      icon: '👤',
-      title: 'Personal Learning',
-      description: 'Customized learning paths tailored to your needs and goals'
-    },
-    {
-      color: 'bg-red-500',
-      icon: '🔒',
-      title: 'Secure Platform',
-      description: 'State-of-the-art security measures to protect your data'
-    },
-    {
-      color: 'bg-green-500',
-      icon: '🤖',
-      title: 'AI Integration',
-      description: 'Advanced AI technology to enhance your learning experience'
-    }
-  ]
-
-  const effectiveLearing = [
-    {
-      id: "1",
-      title: "Moniter your interview skills",
-      description: "Easily track and manage your verbal and technical skills",
-      button: "AI Interview Taker",
-      imageUrl: "https://s3-alpha-sig.figma.com/img/4dc4/55e4/663f228bea4c2a51739f7b9bdb4fa516?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=fbb0HUe88zOicsVMG4ECPH7ly6UEa-J37k7jflSu32TLIO7fJRFi~-XJ7krsujnFrMSms6rj4xzqukrNMgL~qf3b6W6pRpXKiN4SLdbuwUz7gdzvyP9SR7jPf6FkNZK-chQPvvFjcy5DmQEagaBLclLt3gSGuDPLrj-feeZnDL-kNK3giW~LIV2MK~O9opuGo38dCsdAjoUxxXWGs84Fzl29oIFY5FAMFNtdPRT6UACR2MYgo~Gksqo2foEYH7n5aWR9yYPEmJFQ6KDP3NuHxGpjfkUIkSkv8CLnVQnVw2qpgiUpzYPkDQZ3Ujiv0tdMYt11CUYmGwsTsWMmZh1YSQ__"
-    },
-    {
-      id: "2",
-      title: "Moniter your bugs reports",
-      description: "Easily track and manage your engagements on bug bounty programs",
-      button: "Checklist",
-      imageUrl: "https://s3-alpha-sig.figma.com/img/71af/de8b/f0893a435db9a42fce168d073279c65a?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=hBkPKkYSB~9yh4bg3W9~f7KHk5SVBRZr76U3TZ~fypiCeFyXc90FLu2S0S7b5kLrMKG6NLex7j7BSSYpOHBGGvyrrG3VgXNHFWN5377vAjz2Wihkj1yvwpRwWxib98Ku4HrbMByAyQVS50x8-5MXRzvZhOnPGsSZuGtT4roejzNJCdgZaaylHLc3QEDqDwpzI4n0274DswV0Fys1c8dmTP3Lbh3rXNZ26IylloAE8D~0yOHmfhXZj5UvcC-MKexHokLxc2SAj17qML~mR2qFd-iDW30kaElp2xLwhP8weCAKc8D814jiSHVS~3KdDpThAIZ1fbxFgZi0i~TRdWEh1A__"
-    },
-    {
-      id: "3",
-      title: "Moniter your bugs reports",
-      description: "Easily track and manage your engagements on bug bounty programs",
-      button: "Checklist",
-      imageUrl: "https://s3-alpha-sig.figma.com/img/71af/de8b/f0893a435db9a42fce168d073279c65a?Expires=1734912000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=hBkPKkYSB~9yh4bg3W9~f7KHk5SVBRZr76U3TZ~fypiCeFyXc90FLu2S0S7b5kLrMKG6NLex7j7BSSYpOHBGGvyrrG3VgXNHFWN5377vAjz2Wihkj1yvwpRwWxib98Ku4HrbMByAyQVS50x8-5MXRzvZhOnPGsSZuGtT4roejzNJCdgZaaylHLc3QEDqDwpzI4n0274DswV0Fys1c8dmTP3Lbh3rXNZ26IylloAE8D~0yOHmfhXZj5UvcC-MKexHokLxc2SAj17qML~mR2qFd-iDW30kaElp2xLwhP8weCAKc8D814jiSHVS~3KdDpThAIZ1fbxFgZi0i~TRdWEh1A__"
-    }
-  ];
-
   const itemPerSection = 2;
   const totalSections = Math.ceil(effectiveLearing.length / itemPerSection);
 
@@ -60,8 +17,8 @@ export default function LandingPage(){
     setSecondSlide((prev) => (prev + 1) % totalSections);
   }
 
-  return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white relative overflow-hidden mb-40">
+  return(
+    <div className="min-h-screen text-white relative overflow-hidden mb-20">
       <div className="relative z-20 container mx-auto px-4 py-6">
         <Header />
         </div>
@@ -82,32 +39,44 @@ export default function LandingPage(){
           >
           <motion.div className="absolute my-20">
           <svg width="1000" height="370" xmlns="http://www.w3.org/2000/svg" viewBox="5401 70 602 602">
-             <motion.line x1="5501.68" y1="329.32" x2="5368.70" y2="332.32"
-                   stroke="url(#innerGradient)" stroke-width="3" stroke-linecap="round" />
+             <line x1="5501.68" y1="329.32" x2="5368.70" y2="332.32"
+                stroke="url(#innerGradient)" strokeWidth="3" strokeLinecap="round" 
+                filter="url(#glow)"
+              />
            
-             <motion.line x1="5306.10" y1="261.56" x2="5368.79" y2="329.90"
-                   stroke="url(#line-2)" stroke-width="4" stroke-linecap="round" />
+             <line x1="5306.10" y1="261.56" x2="5368.79" y2="329.90"
+               stroke="url(#line-2)" strokeWidth="4" strokeLinecap="round" 
+               filter="url(#glow)"
+               />
             
-             <motion.line x1="5200.20" y1="258.76" x2="5305.90" y2="262.80"
-                   stroke="url(#line-1)" stroke-width="5" stroke-linecap="round"  />
+             <line x1="5200.20" y1="258.76" x2="5305.90" y2="262.80"
+                stroke="url(#line-1)" strokeWidth="5" strokeLinecap="round" 
+                filter="url(#glow)"
+              />
            </svg>
            <svg width="1000" height="370" xmlns="http://www.w3.org/2000/svg" viewBox="5501 70 602 602">
-             <motion.line x1="5531.68" y1="329.32" x2="5368.70" y2="332.32"
-                   stroke="url(#innerGradient)" stroke-width="3" stroke-linecap="round" />
+             <line x1="5531.68" y1="329.32" x2="5368.70" y2="332.32"
+                stroke="url(#innerGradient)" strokeWidth="3" strokeLinecap="round" 
+                filter="url(#glow)"
+              />
            </svg>
          
           </motion.div>
           
           <motion.div className='absolute z-20 mt-72 ml-32'>
           <svg width="1000" height="370" xmlns="http://www.w3.org/2000/svg" viewBox="4394 -170 802 602">
-             <motion.line x1="5501.68" y1="259.32" x2="5328.70" y2="253.32"
-                stroke="url(#innerGradient)" stroke-width="3" stroke-linecap="round" />
+             <line x1="5501.68" y1="259.32" x2="5328.70" y2="253.32"
+              stroke="url(#innerGradient)" strokeWidth="3" strokeLinecap="round" 
+              filter="url(#glow)"
+             />
            </svg>
           </motion.div>
           <motion.div className='absolute mt-14 ml-32'>
           <svg width="1000" height="370" xmlns="http://www.w3.org/2000/svg" viewBox="4300 -20 802 602">
-             <motion.line x1="5531.68" y1="219.32" x2="5368.70" y2="332.32"
-                stroke="url(#innerGradient)" stroke-width="3" stroke-linecap="round" />
+             <line x1="5531.68" y1="219.32" x2="5368.70" y2="332.32"
+                stroke="url(#innerGradient)" strokeWidth="3" strokeLinecap="round"
+                filter="url(#glow)"
+              />
            </svg>
           </motion.div>
 
@@ -203,6 +172,13 @@ export default function LandingPage(){
                 <filter id="blur">
                   <feGaussianBlur stdDeviation="3" />
                 </filter>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
             </svg>
           </motion.div>
@@ -215,7 +191,7 @@ export default function LandingPage(){
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
               Revolutionizing future steps in{" "}
-              <span className="bg-transparent bg-clip-text text-transparent w-full xl:leading-snug bg-gradient-to-r from-[#3A53FE] via-[#00D1FF] to-[#00D1FF] ">Ed-Tech</span> and{" "}
+              <span className="bg-transparent bg-clip-text text-transparent w-full xl:leading-snug bg-gradient-to-r from-[#3A53FE] via-[#00D1FF] to-[#00D1FF]">Ed-Tech</span> and{" "}
               <span className="text-[#714fa7]">AI</span>
             </h1>
             <div className="text-center text-gray-400">
@@ -259,27 +235,26 @@ export default function LandingPage(){
             </button>
           
             <button className="cursor-pointer">
-    <div
-      className="flex max-w-48 lg:h-8 px-2  rounded-lg items-center justify-center bg-black text-white dark:text-black dark:bg-white lg:gap-1 sm:gap-3 sm:h-14"
-    >
-      <svg viewBox="0 0 384 512" className="lg:w-4 h-4 sm:w-7">
-        <path
-          d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
-          fill="currentColor"
-        ></path>
-      </svg>
-      <div>
-        <span className="lg:text-xs font-semibold font-sans sm: text-2xl">
-          App Store
-        </span>
+              <div
+                className="flex max-w-48 lg:h-8 px-2  rounded-lg items-center justify-center bg-black text-white dark:text-black dark:bg-white lg:gap-1 sm:gap-3 sm:h-14"
+              >
+                <svg viewBox="0 0 384 512" className="lg:w-4 h-4 sm:w-7">
+                  <path
+                    d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"
+                    fill="currentColor"
+                  ></path>
+                </svg>
+                <div>
+                  <span className="lg:text-xs font-semibold font-sans sm: text-2xl">
+                    App Store
+                  </span>
+                </div>
+              </div>
+            </button>
+         </div>
       </div>
-    </div>
-  </button>
-</div>
-
-            </div>
-        </div>   
-          </motion.div>
+    </div>   
+  </motion.div>
 
           <div className="relative max-w-5xl mx-auto z-20">
              <button
@@ -362,41 +337,47 @@ export default function LandingPage(){
            </motion.div>
         </motion.div>
         
-        <motion.div className='gap-7 mt-10 ml-20 flex overflow-hidden'
-         key={secondslide}
-         initial={{ opacity: 0, x: -200 }}
-         animate={{ opacity: 1, x: 0 }}
-         exit={{ opacity: 0, x: 200 }}
-         transition={{ duration: 0.5 }}
-        >
-
-           {
-            effectiveLearing.map((i) => (
-              <div key={i.id} className='border p-5 h-[381px] w-[452px] flex rounded-3xl flex-col  border-gray-700'>
-                <img src={i.imageUrl} alt="img"  className='w-96 h-52 rounded-lg'/>
-                <span className='text-white font-normal text-xl mt-3'>{i.title}</span> 
-                <span className='text-[#979797] text-xs'>{i.description}</span>
-                <div className='border-[#E8E8E8] border-2 ml-4  rounded-2xl text-center p-2 w-[389px] h-[59px] mt-3 '>
-                  <span className='bg-transparent bg-clip-text text-transparent w-full xl:leading-snug bg-gradient-to-r from-[#381CA5] to-[#00D1FF] text-3xl font-semibold'>{i.button}</span>
-                 </div>
-              </div>
-            ))
-           }
+       <motion.div>
+            <RenderEffectiveRenderSlide secondslide={secondslide} itemPerSection={itemPerSection} effectiveLearing={effectiveLearing} />
             <button
              onClick={nextSlide}
-             className="absolute right-60 bottom-[150px] -translate-y-1/2 z-10 p-2 rounded-full border border-gray-800 border-t-[2px] border-l-[2px] border-b-gray-900 border-r-gray-900 shadow-md hover:shadow-lg hover:bg-gray-800 transition-all duration-300 ease-in-out"
+             className="absolute right-20 bottom-[300px] -translate-y-1/2 z-10 p-2 rounded-full border border-gray-800 border-t-[2px] border-l-[2px] border-b-gray-900 border-r-gray-900 shadow-md hover:shadow-lg hover:bg-gray-800 transition-all duration-300 ease-in-out"
              >
              <ArrowRight className="w-6 h-6" />
             </button>
+            <div className='flex justify-center mr-[100px]'>
+             <SlideButton features={effectiveLearing.slice(0, totalSections)} currentSlide={secondslide} setCurrentSlide={setSecondSlide}/>
+            </div>
             
         </motion.div>
-        <div className='flex justify-center mr-[267px]'>
-          <SlideButton features={effectiveLearing} currentSlide={secondslide} setCurrentSlide={setSecondSlide}/>
-        </div>
-       
-    </div>
-  
-)
+        
 
-}
+          <div className='mt-20 text-center'>
+            <span className='bg-transparent bg-clip-text text-transparent w-full xl:leading-snug bg-gradient-to-r from-[#381CA5] to-[#00D1FF] text-2xl font-semibold'>
+            Intense Learning
+            </span>
+          </div>
+          <div className='flex flex-col'>
+            <span className='font-normal text-[50px] text-center'>Your skills would get upgraded</span>
+            <span className='font-normal text-[26px] text-center'>Don`t hold yourself back from being the better you</span>
+          </div>
+
+          <div className='mt-20 flex justify-center'>
+         
+           <img src={png}    className='w-[700px]'/>
+          </div>
+          <div className='mt-20 text-center'>
+            <span className='bg-transparent bg-clip-text text-transparent w-full xl:leading-snug bg-gradient-to-r from-[#381CA5] to-[#00D1FF] text-[22px] font-semibold'>
+            Call To Action
+            </span>
+          </div>
+          <div className='flex flex-col'>
+            <span className='font-normal text-[50px] text-center'>Have questions about us?</span>
+            <span className='font-normal text-[50px] ml-16 text-center'>Write to us and get answers!</span>
+          </div>
+
+  </div>
+);
+};
+
 
