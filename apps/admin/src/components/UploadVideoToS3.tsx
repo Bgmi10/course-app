@@ -7,24 +7,32 @@ import { ErrorMessage } from './ErrorMessage';
 import { bucketName } from '../utils/contants';
 import Loader from './Loder';
 
-// here implement a cache for fetching folders from 3 use a tanstan query 
+interface UploadProgress {
+  fileName: string;
+  progress: number;
+}
 
 export default function UploadVideoToS3() {
-  const [userInput, setUserInput] = useState<string>('');
-  const [subfoldername, setSubFolderName] = useState<Record<number, string>>({});
+  const [userInput, setUserInput] = useState<string>("");
+  const [subfoldername, setSubFolderName] = useState<Record<number, string>>(
+    {}
+  );
   const [userFolders, setUserFolders] = useState<string[]>([]);
-  const [message, setMessage] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [message, setMessage] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  
+  const [uploadProgress, setUploadProgress] = useState<
+    Record<string, UploadProgress[]>
+  >({});
+
   useEffect(() => {
     const fetchS3Folders = async () => {
       try {
         const { folders } = await FetchFoldersFromS3(bucketName);
         setUserFolders(folders);
       } catch (error) {
-        console.error('Error fetching folders:', error);
-        setError('Failed to load folders from S3.');
+        console.error("Error fetching folders:", error);
+        setError("Failed to load folders from S3.");
       } finally {
         setIsLoading(false);
       }
@@ -32,60 +40,107 @@ export default function UploadVideoToS3() {
     fetchS3Folders();
   }, []);
 
-  const handleCreateAFolder = (parentIndex: any  = null) => {
-    let folderName = parentIndex === null ? userInput : subfoldername[parentIndex] || '';
-    
+  const handleCreateAFolder = (parentIndex: any = null) => {
+    let folderName =
+      parentIndex === null ? userInput : subfoldername[parentIndex] || "";
+
     if (!folderName) {
-      setError('Please provide a folder name');
+      setError("Please provide a folder name");
       return;
     }
     let newFolder: string;
     if (parentIndex === null) {
       newFolder = `${folderName}/`;
     } else {
-      const parentFolder = userFolders[parentIndex].endsWith('/') 
-        ? userFolders[parentIndex].slice(0, -1) 
+      const parentFolder = userFolders[parentIndex].endsWith("/")
+        ? userFolders[parentIndex].slice(0, -1)
         : userFolders[parentIndex];
       newFolder = `${parentFolder}/${folderName}/`;
     }
 
-    setUserFolders(prev => [...prev, newFolder]);
-    setMessage(`Folder "${newFolder}"created successfully`);
-
-    setUserInput('');
-    setSubFolderName(prev => ({...prev, [parentIndex]: ''}));
+    setUserFolders((prev) => [...prev, newFolder]);
+    setMessage(`Folder "${newFolder}" created successfully`);
+    setUserInput("");
+    setSubFolderName((prev) => ({ ...prev, [parentIndex]: "" }));
   };
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, folderPath: string) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setError('Please select a file to upload');
+    const files = e.target.files;
+    if (!files || files.length === 0) {
+      setError('Please select files to upload');
       return;
     }
+  
+    const fileArray = Array.from(files);
+  
     try {
-      const uploadedUrl = await uploadToS3(file, `${folderPath}${file.name}`);
-      setMessage(`File uploaded successfully to ${uploadedUrl}`);
+      // Upload files in parallel using Promise.all
+      await Promise.all(
+        fileArray.map((file) => {
+          const fileName = file.name;
+          const uniqueId = `${folderPath}-${Date.now()}-${fileName}`;
+  
+          // Add upload progress placeholder
+          setUploadProgress((prev) => ({
+            ...prev,
+            [folderPath]: [...(prev[folderPath] || []), { fileName, progress: 0 }],
+          }));
+  
+          return uploadToS3(file, folderPath, (percentage) => {
+            // Update progress for each file
+            setUploadProgress((prev) => {
+              const folderUploads = prev[folderPath] || [];
+              return {
+                ...prev,
+                [folderPath]: folderUploads.map((upload) =>
+                  upload.fileName === fileName
+                    ? { ...upload, progress: percentage }
+                    : upload
+                ),
+              };
+            });
+          })
+            .then(() => {
+              // Display success message for the uploaded file
+              setMessage(`File "${fileName}" uploaded successfully`);
+            })
+            .catch((err) => {
+              console.error('Upload failed', err);
+              setError(`Failed to upload file "${fileName}". Please try again.`);
+            })
+            .finally(() => {
+              // Remove the file from the progress list after upload
+              setUploadProgress((prev) => ({
+                ...prev,
+                [folderPath]: (prev[folderPath] || []).filter(
+                  (upload) => upload.fileName !== fileName
+                ),
+              }));
+            });
+        })
+      );
     } catch (err) {
-      console.error('Upload failed', err);
-      setError('File upload failed. Please try again.');
+      console.error('Error during parallel upload:', err);
+      setError('Failed to upload some files. Please try again.');
     }
   };
+  
 
   const handleDelete = async (folderPath: string) => {
     try {
       await deleteFolderFromS3(folderPath);
       setMessage(`${folderPath} deleted successfully`);
-      setUserFolders(prev => prev.filter(folder => !folder.startsWith(folderPath)));
+      setUserFolders((prev) =>
+        prev.filter((folder) => !folder.startsWith(folderPath))
+      );
     } catch (e) {
       console.error(e);
-      setError('Failed to delete folder. Please try again.');
+      setError("Failed to delete folder. Please try again.");
     }
   };
 
   if (isLoading) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
   return (
@@ -109,27 +164,61 @@ export default function UploadVideoToS3() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="rounded-2xl shadow-2xl overflow-hidden border border-gray-900"
         >
-          <div className="p-4 sm:p-6 md:p-8">
-            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6 sm:mb-8">
-              <input
-                type="text"
-                value={userInput}
-                placeholder="Enter folder name"
-                onChange={(e) => setUserInput(e.target.value)}
-                className="w-full sm:flex-grow px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="lg:w-1/2 sm: w-full flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out shadow-lg"
-                onClick={() => handleCreateAFolder(null)}
-              >
-                <PlusIcon className="w-6 h-6 mr-2" />
-                Create Folder
-              </motion.button>
-            </div>
+          <div className="flex items-center space-x-4">
+            <input
+              type="text"
+              placeholder="Create Folder Name"
+              className="flex-1 border p-2 rounded-md text-black"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+            />
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+              onClick={() => handleCreateAFolder(null)}
+            >
+              <PlusIcon className="w-5 h-5 inline-block" /> Add Folder
+            </button>
+          </div>
+        </motion.div>
+
+        <div className="mt-8">
+          {userFolders.map((folder, index) => (
+            <div
+              key={folder}
+              className="border border-gray-600 rounded-md bg-gradient-to-b from-gray-700 to-gray-900 p-4 mb-4"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center">
+                  <FolderIcon className="w-6 h-6 text-blue-400 mr-2" />
+                  <span className="text-lg font-semibold">{folder}</span>
+                </div>
+                <div>
+                  <button
+                    className="text-red-500 hover:text-red-700 transition duration-300"
+                    onClick={() => handleDelete(folder)}
+                  >
+                    <Trash className="w-5 h-5 inline-block" /> Delete
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex space-x-4 mb-2">
+                <input
+                  type="text"
+                  placeholder="Create Subfolder"
+                  className="flex-1 border p-2 rounded-md text-black"
+                  value={subfoldername[index] || ""}
+                  onChange={(e) =>
+                    setSubFolderName((prev) => ({
+                      ...prev,
+                      [index]: e.target.value,
+                    }))
+                  }
+                />
+                <button
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+                  onClick={() => handleCreateAFolder(index)}
 
             <AnimatePresence>
               {userFolders.map((folder) => (
@@ -140,76 +229,45 @@ export default function UploadVideoToS3() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                   className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gray-800 rounded-lg p-4 mb-4 hover:bg-gray-700 transition duration-200"
-                >
-                  <div className="flex items-center space-x-3 mb-2 sm:mb-0">
-                    <FolderIcon className="w-6 h-6 text-blue-400 flex-shrink-0" />
-                    <span className="text-lg break-all">{folder}</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <motion.label
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center justify-center px-12 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200 ease-in-out cursor-pointer shadow-md"
-                    >
-                      <UploadIcon className="w-5 h-5 mr-2" />
-                      Upload File
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={(e) => handleFileChange(e, folder)}
-                      />
-                    </motion.label>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleDelete(folder)}
-                      className="p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200 ease-in-out shadow-md"
-                    >
-                      <Trash className="w-5 h-5" />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
 
-            {userFolders.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="mt-8 sm:mt-12"
-              >
-                <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-blue-400">Create Subfolder in Existing Folder:</h3>
-                {userFolders.map((folder, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-                    <span className="text-gray-400 text-lg break-all">{folder}</span>
-                    <div className="w-full sm:flex-grow flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                      <input
-                        type="text"
-                        value={subfoldername[index] || ''}
-                        placeholder="Enter subfolder name"
-                        onChange={(e) => {
-                          setSubFolderName(prev => ({...prev, [index]: e.target.value}));
-                        }}
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                      />
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="lg:w-1/2 sm: w-full flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 ease-in-out shadow-lg"
-                        onClick={() => handleCreateAFolder(index)}
-                      >
-                        <FolderPlusIcon className="w-5 h-5 mr-2" />
-                        Create Subfolder
-                      </motion.button>
+                >
+                  <PlusIcon className="w-5 h-5 inline-block" /> Add Subfolder
+                </button>
+              </div>
+
+              <div className="flex space-x-4">
+                <label
+                  htmlFor={`upload-${index}`}
+                  className="cursor-pointer bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition duration-300"
+                >
+                  <UploadIcon className="w-5 h-5 inline-block" /> Upload Files
+                </label>
+                <input
+                  id={`upload-${index}`}
+                  type="file"
+                  className="hidden"
+                  multiple // Allow multiple file selection
+                  onChange={(e) => handleFileChange(e, folder)}
+                />
+              </div>
+
+              {uploadProgress[folder] &&
+                uploadProgress[folder].map(({ fileName, progress }) => (
+                  <div key={fileName} className="mt-4">
+                    <div className="bg-gray-600 rounded-full h-4">
+                      <div
+                        className="bg-blue-500 h-4 rounded-full transition-all duration-500"
+                        style={{ width: `${progress}%` }}
+                      ></div>
                     </div>
+                    <span className="text-sm font-medium">
+                      {fileName}: {progress}% Uploaded
+                    </span>
                   </div>
                 ))}
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
