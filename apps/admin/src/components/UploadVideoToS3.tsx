@@ -1,7 +1,7 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
+import { useState, ChangeEvent, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FetchFoldersFromS3, deleteFolderFromS3, uploadToS3 } from '../utils/s3upload';
-import { FolderIcon, UploadIcon, PlusIcon, FolderPlusIcon, Loader2Icon, Trash } from 'lucide-react';
+import { FolderIcon, UploadIcon, PlusIcon, FolderPlusIcon, Trash } from 'lucide-react';
 import { SuccessMessage } from './SuccessMessage';
 import { ErrorMessage } from './ErrorMessage';
 import { bucketName } from '../utils/contants';
@@ -132,7 +132,7 @@ export default function UploadVideoToS3() {
             </div>
 
             <AnimatePresence>
-              {userFolders.map((folder, index) => (
+              {userFolders.map((folder) => (
                 <motion.div
                   key={folder}
                   initial={{ opacity: 0, y: 20 }}
@@ -214,4 +214,3 @@ export default function UploadVideoToS3() {
     </div>
   );
 }
-

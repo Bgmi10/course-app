@@ -4,7 +4,6 @@ import Courses from "./components/Course";
 import DashBoard from "./components/DashBoard";
 import { Header } from "./components/Header";
 import StudentsList from "./components/StudentList";
-import Signin from "./components/auth/Signin";
 import NotFound from "./components/NotFound";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import { useContext, useEffect } from "react";
@@ -47,7 +46,6 @@ function App() {
           <Route path="/student/:id" element={ <StudentEdit />} />
           <Route path="/pathway" element={ <PathWay /> } />
           </Route>
-          {<Route path="/signin" element={ <Signin /> } />}
           <Route path="*" element={ <NotFound /> } />
         </Routes>
       </Router>

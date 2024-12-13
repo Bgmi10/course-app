@@ -1,4 +1,4 @@
-import { faEnvelope, faVoicemail } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import instaGram from "../imgs/instagram.png";
 import linkDin from "../imgs/linkedin.png";
