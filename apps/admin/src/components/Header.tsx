@@ -1,11 +1,10 @@
 import { useState, useContext} from 'react';
-import { FaBars, FaTimes, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaTicketAlt, FaUserCircle, FaUpload, FaCalendarAlt } from 'react-icons/fa';
+import { FaBars, FaTimes, FaUserGraduate, FaChalkboardTeacher, FaClipboardList, FaTicketAlt, FaUserCircle, FaUpload, FaCalendarAlt, FaAccusoft } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthContext } from '../context/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOut } from '@fortawesome/free-solid-svg-icons';
-
 
 
 export const Header = () => {
@@ -22,7 +21,10 @@ export const Header = () => {
       <div className="flex justify-between items-center">
         <span className="text-2xl font-bold text-stone-500 mt-[-10px]">SecX</span>
 
-        <nav className="hidden md:flex gap-8 items-center">
+        <nav className="hidden md:flex gap-6 items-center">
+          <Link to="/pathway" className=" text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
+            <FaAccusoft /> <span>Create Pathway</span>
+          </Link>
           <Link to="/upload-videos" className=" text-sm font-medium hover:text-blue-400 transition-colors flex items-center gap-2 ">
             <FaUpload /> <span>Upload videos</span>
           </Link>

@@ -8,7 +8,7 @@
 }
 
 body {
-  background: hsl(var(--background));
+  background: #101010;
   color: hsl(var(--foreground));
 }
 

@@ -1,9 +1,9 @@
 {
   "name": "@repo/ui",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
   "exports": {
+    "./login": "./src/login.tsx",
     "./button": "./src/button.tsx",
     "./card": "./src/card.tsx",
     "./code": "./src/code.tsx"

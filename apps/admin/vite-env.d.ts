@@ -5,7 +5,6 @@ interface ImportMetaEnv {
     VITE_APP_AWS_ACCESS_KEY_ID: any
     VITE_APP_AWS_BUCKET_NAME: string
     readonly VITE_APP_TITLE: string
-    // more env variables...
   }
   
   interface ImportMeta {

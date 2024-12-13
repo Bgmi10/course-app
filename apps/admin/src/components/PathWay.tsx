@@ -1,32 +1,14 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowLeft,
-  faArrowRight,
-  faCheck,
-  faPlus,
-  faUpload,
-  faTimes,
-  faFolder,
-  faFile,
-  faChevronRight,
-  faChevronDown,
-} from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight, faCheck, faPlus, faUpload, faTimes, faFolder, faFile, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { ref, set } from "firebase/database";
 import { db } from "../utils/firebase";
-import { uploadToS3, FetchFoldersFromS3 } from "../utils/s3upload";
-import { useDropzone } from "react-dropzone";
-import { bucketName, region_aws } from "../utils/contants";
-import { ErrorMessage } from "./ErrorMessage";
-import { SuccessMessage } from "./SuccessMessage";
-
-interface Quiz {
-  id: string;
-  question: string;
-  options: string[];
-  answer: string;
-}
+import { uploadToS3, FetchFoldersFromS3 } from '../utils/s3upload';
+import { useDropzone } from 'react-dropzone';
+import { bucketName, region_aws } from '../utils/contants';
+import { ErrorMessage } from './ErrorMessage';
+import { SuccessMessage } from './SuccessMessage';
 
 interface Lesson {
   id: string;
@@ -34,7 +16,6 @@ interface Lesson {
   description: string;
   videoUrl: string;
   duration: number;
-  quizzes: Quiz[];
 }
 
 interface Section {
@@ -56,11 +37,11 @@ interface Course {
 
 interface FolderItem {
   name: string;
-  type: "folder" | "file";
+  type: 'folder' | 'file';
   children?: FolderItem[];
 }
 
-export default function CourseForm() {
+export default function PathWay() {
   const [step, setStep] = useState(1);
   const [course, setCourse] = useState<Course>({
     title: "",
@@ -70,12 +51,12 @@ export default function CourseForm() {
     sections: [],
     instructorId: "",
     categoryId: "",
-    imageFiles: [],
+    imageFiles: []
   });
   const [currentSection, setCurrentSection] = useState<Section>({
     id: "",
     title: "",
-    lessons: [],
+    lessons: []
   });
   const [currentLesson, setCurrentLesson] = useState<Lesson>({
     id: "",
@@ -83,28 +64,17 @@ export default function CourseForm() {
     description: "",
     videoUrl: "",
     duration: 0,
-    quizzes: [],
   });
-  const [currentQuiz, setCurrentQuiz] = useState<Quiz>({
-    id: "",
-    question: "",
-    options: ["", "", "", ""],
-    answer: "",
-  });
-  const [error, setError] = useState<string>("");
-  const [successMessage, setSuccessMessage] = useState<string>("");
+
+  const [error, setError] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(
-    null
-  );
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [folderStructure, setFolderStructure] = useState<FolderItem[]>([]);
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
-    new Set()
-  );
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [showS3Selector, setShowS3Selector] = useState<boolean>(false);
-
 
   useEffect(() => {
     fetchRootFolders();
@@ -113,9 +83,7 @@ export default function CourseForm() {
   const fetchRootFolders = async () => {
     try {
       const { folders } = await FetchFoldersFromS3(bucketName);
-      setFolderStructure(
-        folders.map((folder) => ({ name: folder, type: "folder" }))
-      );
+      setFolderStructure(folders.map(folder => ({ name: folder, type: 'folder' })));
     } catch (e) {
       console.error(e);
     }
@@ -123,16 +91,10 @@ export default function CourseForm() {
 
   const fetchSubFolders = async (folderPath: string) => {
     try {
-      const { folders, files } = await FetchFoldersFromS3(
-        "sec-x",
-        folderPath,
-        "/"
-      );
       const { folders, files } = await FetchFoldersFromS3(bucketName, folderPath, '/');
-
       return [
-        ...folders.map((folder) => ({ name: folder, type: "folder" as const })),
-        ...files.map((file) => ({ name: file, type: "file" as const })),
+        ...folders.map(folder => ({ name: folder, type: 'folder' as const })),
+        ...files.map(file => ({ name: file, type: 'file' as const }))
       ];
     } catch (e) {
       console.error(e);
@@ -147,177 +109,63 @@ export default function CourseForm() {
     } else {
       newExpandedFolders.add(folderPath);
       const subItems = await fetchSubFolders(folderPath);
-      setFolderStructure(
-        updateFolderStructure(folderStructure, folderPath, subItems)
-      );
+      setFolderStructure(updateFolderStructure(folderStructure, folderPath, subItems));
     }
     setExpandedFolders(newExpandedFolders);
   };
 
-  const updateFolderStructure = (
-    items: FolderItem[],
-    path: string,
-    newChildren: FolderItem[]
-  ): FolderItem[] => {
-    return items.map((item) => {
+  const updateFolderStructure = (items: FolderItem[], path: string, newChildren: FolderItem[]): FolderItem[] => {
+    return items.map(item => {
       if (item.name === path) {
         return { ...item, children: newChildren };
       } else if (item.children) {
-        return {
-          ...item,
-          children: updateFolderStructure(item.children, path, newChildren),
-        };
+        return { ...item, children: updateFolderStructure(item.children, path, newChildren) };
       }
       return item;
     });
   };
 
-  const handleFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setCourse((prev) => ({ ...prev, [name]: value }));
+    setCourse(prev => ({ ...prev, [name]: value }));
   };
-
+  
   const addSection = () => {
-    if (currentSection.title.trim()) {
-      setCourse((prev) => ({
+   
+      setCourse(prev => ({
         ...prev,
-        sections: [
-          ...prev.sections,
-          { ...currentSection, id: `section_${Date.now()}`, lessons: [] }, // Clear lessons when adding a new section
-        ],
+        sections: [...prev.sections, { ...currentSection, id: `section_${Date.now()}` }]
       }));
-  
-      setCurrentSection({
-        id: "",
-        title: "",
-        lessons: [], // Reset the lessons array when adding a new section
-      });
-      setCurrentLesson({
-        id: "",
-        title: "",
-        description: "",
-        videoUrl: "",
-        duration: 0,
-        quizzes: [],
-      }); // Reset the current lesson state as well
-    } else {
-      setError("Section title cannot be empty");
-    }
+      setCurrentSection({ id: "", title: "", lessons: [] });
   };
-  
 
   const addLesson = () => {
-    if (currentLesson.title.trim() && selectedSectionId) {
-      setCourse((prev) => ({
+      setCourse(prev => ({
         ...prev,
-        sections: prev.sections.map((section) =>
+        sections: prev.sections.map(section =>
           section.id === selectedSectionId
-            ? {
-                ...section,
-                lessons: [
-                  ...section.lessons,
-                  { ...currentLesson, id: `lesson_${Date.now()}`, quizzes: [] },
-                ],
-              }
+            ? { ...section, lessons: [...section.lessons, { ...currentLesson, id: `lesson_${Date.now()}`, quizzes : [] }] }
             : section
-        ),
+        )
       }));
-      
-      console.log(course);
-      console.log(currentLesson);
-      console.log(currentSection);
-      setCurrentLesson({
-        id: "",
-        title: "",
-        description: "",
-        videoUrl: "",
-        duration: 0,
-        quizzes: [],
-      });
+      setCurrentLesson({ id: "", title: "", description: "", videoUrl: "", duration: 0 });
       setShowS3Selector(false);
-    } else {
-      setError("Lesson title cannot be empty and a section must be selected");
-    }
-  };
-
-  const addQuiz = () => {
-    if (currentQuiz.question.trim() && selectedSectionId && selectedLessonId) {
-      const newQuiz = {
-        ...currentQuiz,
-        id: `quiz_${Date.now()}`,
-      };
-
-      setCourse((prev) => {
-        const updatedSections = prev.sections.map((section) => {
-          if (section.id === selectedSectionId) {
-            return {
-              ...section,
-              lessons: section.lessons.map((lesson) => {
-                if (lesson.id === selectedLessonId) {
-                  return {
-                    ...lesson,
-                    quizzes: [...lesson.quizzes, newQuiz],
-                  };
-                }
-                return lesson;
-              }),
-            };
-          }
-          return section;
-        });
-
-        return {
-          ...prev,
-          sections: updatedSections,
-        };
-      });
-
-      setCurrentQuiz({
-        id: "",
-        question: "",
-        options: ["", "", "", ""],
-        answer: "",
-      });
-    } else {
-      setError("Quiz question cannot be empty and a lesson must be selected");
-    }
   };
 
   const handleSubmit = async () => {
-    if (
-      !course.title ||
-      !course.description ||
-      course.price === "" ||
-      !course.language
-    ) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
     try {
-      const courseId = `course_${Date.now()}`;
-      const courseRef = ref(db, "courses/" + courseId);
+      const courseId = `pathway_${Date.now()}`;
+      const courseRef = ref(db, "pathway/" + courseId);
       const finalCourse: Course = {
         ...course,
       };
 
       await set(courseRef, finalCourse);
-      setSuccessMessage("Course created successfully!");
-      setCourse({
-        title: "",
-        description: "",
-        price: "",
-        imageFiles: [],
-        language: "",
-        sections: [],
-        categoryId: "",
-        instructorId: "",
-      });
+      setSuccessMessage('Pathway created successfully!');
+      setCourse({ title: "", description: "", price: "",imageFiles: [],language: "",sections: [],categoryId: "", instructorId: "" });
     } catch (e) {
       console.error(e);
-      setError("Failed to create course. Please try again.");
+      setError('Failed to create course. Please try again.');
     }
   };
 
@@ -327,10 +175,8 @@ export default function CourseForm() {
     try {
       const uploadedUrls = await Promise.all(
         acceptedFiles.map(async (file, index) => {
-          const url = await uploadToS3(file, "course-images", (percentage) => {
-            setUploadProgress(percentage);
-          });
-          //setUploadProgress((prev) => prev + (100 / acceptedFiles.length));
+          const url = await uploadToS3(file, 'pathway-images');
+          setUploadProgress((prev) => prev + (100 / acceptedFiles.length));
           return url;
         })
       );
@@ -338,10 +184,10 @@ export default function CourseForm() {
         ...prev,
         imageFiles: [...prev.imageFiles, ...uploadedUrls],
       }));
-      setSuccessMessage("Images uploaded successfully!");
+      setSuccessMessage('Images uploaded successfully!');
     } catch (error) {
-      console.error("Error uploading images:", error);
-      setError("Failed to upload images. Please try again.");
+      console.error('Error uploading images:', error);
+      setError('Failed to upload images. Please try again.');
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -356,18 +202,16 @@ export default function CourseForm() {
       setIsUploading(true);
       setUploadProgress(0);
       try {
-        const url = await uploadToS3(file, "course-videos", (percentage) => {
-          setUploadProgress(percentage);
-        });
+        const url = await uploadToS3(file, 'pathway-videos');
         setCurrentLesson((prev) => ({ ...prev, videoUrl: url }));
-        setSuccessMessage("Video uploaded successfully!");
+        setSuccessMessage('Video uploaded successfully!');
       } catch (error) {
-        console.error("Error uploading video:", error);
-        setError("Failed to upload video. Please try again.");
+        console.error('Error uploading video:', error);
+        setError('Failed to upload video. Please try again.');
       } finally {
         setIsUploading(false);
         setUploadProgress(0);
-        setSuccessMessage("");
+        setSuccessMessage('')
       }
     }
   };
@@ -379,10 +223,7 @@ export default function CourseForm() {
     }));
   };
 
-  const renderFolderStructure = (
-    items: FolderItem[],
-    currentPath: string = ""
-  ) => {
+  const renderFolderStructure = (items: FolderItem[], currentPath: string = '') => {
     return (
       <ul className="pl-4">
         {items.map((item, index) => {
@@ -390,30 +231,22 @@ export default function CourseForm() {
           const isExpanded = expandedFolders.has(fullPath);
           return (
             <li key={index} className="my-2">
-              {item.type === "folder" ? (
+              {item.type === 'folder' ? (
                 <div>
                   <button
                     onClick={() => toggleFolder(fullPath)}
                     className="flex items-center text-blue-400 hover:text-blue-300"
                   >
-                    <FontAwesomeIcon
-                      icon={isExpanded ? faChevronDown : faChevronRight}
-                      className="mr-2"
-                    />
+                    <FontAwesomeIcon icon={isExpanded ? faChevronDown : faChevronRight} className="mr-2" />
                     <FontAwesomeIcon icon={faFolder} className="mr-2" />
                     {item.name}
                   </button>
-                  {isExpanded &&
-                    item.children &&
-                    renderFolderStructure(item.children, `${fullPath}/`)}
+                  {isExpanded && item.children && renderFolderStructure(item.children, `${fullPath}/`)}
                 </div>
               ) : (
                 <button
                   onClick={() => {
-                    setCurrentLesson((prev) => ({
-                      ...prev,
-                      videoUrl: `https://${bucketName}.s3.${region_aws}.amazonaws.com/${fullPath}`,
-                    }));
+                    setCurrentLesson(prev => ({ ...prev, videoUrl: `https://${bucketName}.s3.${region_aws}.amazonaws.com/${fullPath}` }));
                     setShowS3Selector(false);
                   }}
                   className="flex items-center text-gray-300 hover:text-white ml-4"
@@ -446,7 +279,7 @@ export default function CourseForm() {
                 name="title"
                 value={course.title}
                 onChange={handleFormChange}
-                placeholder="Course Title"
+                placeholder="Pathway Title"
                 className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -454,7 +287,7 @@ export default function CourseForm() {
                 name="description"
                 value={course.description}
                 onChange={handleFormChange}
-                placeholder="Course Description"
+                placeholder="Pathway Description"
                 className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
                 required
               />
@@ -465,7 +298,6 @@ export default function CourseForm() {
                 onChange={handleFormChange}
                 placeholder="Price"
                 className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
               />
               <input
                 type="text"
@@ -479,19 +311,12 @@ export default function CourseForm() {
               <div
                 {...getRootProps()}
                 className={`p-6 border-2 border-dashed rounded-md text-center cursor-pointer transition-colors duration-300 ${
-                  isDragActive
-                    ? "border-blue-500 bg-blue-500 bg-opacity-10"
-                    : "border-gray-600 hover:border-blue-500 hover:bg-blue-500 hover:bg-opacity-10"
+                  isDragActive ? 'border-blue-500 bg-blue-500 bg-opacity-10' : 'border-gray-600 hover:border-blue-500 hover:bg-blue-500 hover:bg-opacity-10'
                 }`}
               >
                 <input {...getInputProps()} />
-                <FontAwesomeIcon
-                  icon={faUpload}
-                  className="text-4xl mb-2 text-blue-400"
-                />
-                <p className="text-gray-300">
-                  Drag 'n' drop course images here, or click to select files
-                </p>
+                <FontAwesomeIcon icon={faUpload} className="text-4xl mb-2 text-blue-400" />
+                <p className="text-gray-300">Drag 'n' drop course images here, or click to select files</p>
               </div>
               {isUploading && (
                 <motion.div
@@ -503,11 +328,7 @@ export default function CourseForm() {
               <div className="grid grid-cols-3 gap-4 mt-4">
                 {course.imageFiles.map((image, index) => (
                   <div key={index} className="relative group">
-                    <img
-                      src={image}
-                      alt={`Course image ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-md"
-                    />
+                    <img src={image} alt={`Course image ${index + 1}`} className="w-full h-24 object-cover rounded-md" />
                     <button
                       onClick={() => removeImage(index)}
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
@@ -529,20 +350,13 @@ export default function CourseForm() {
             transition={{ duration: 0.3 }}
             className="space-y-6"
           >
-            <h2 className="lg:text-4xl sm: text-xl text-center font-bold text-blue-400 mb-6">
-              Sections and Lessons
-            </h2>
+            <h2 className="lg:text-4xl sm: text-xl text-center font-bold text-blue-400 mb-6">Sections and Lessons</h2>
             <div className="space-y-6">
               <div className="flex space-x-4">
                 <input
                   type="text"
                   value={currentSection.title}
-                  onChange={(e) =>
-                    setCurrentSection((prev) => ({
-                      ...prev,
-                      title: e.target.value,
-                    }))
-                  }
+                  onChange={(e) => setCurrentSection(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Section Title"
                   className="flex-grow p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -554,7 +368,7 @@ export default function CourseForm() {
                   Add Section
                 </button>
               </div>
-
+              
               {course.sections.map((section, sectionIndex) => (
                 <motion.div
                   key={section.id}
@@ -562,39 +376,25 @@ export default function CourseForm() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                   className={`bg-gray-800 p-6 rounded-lg shadow-lg cursor-pointer ${
-                    selectedSectionId === section.id
-                      ? "border border-gray-600"
-                      : ""
+                    selectedSectionId === section.id ? 'border border-gray-600' : ''
                   }`}
                   onClick={() => {
                     setSelectedSectionId(section.id);
                     setCurrentSection(section);
                   }}
                 >
-                  <h3 className="text-2xl font-semibold text-blue-400 mb-4">
-                    {section.title}
-                  </h3>
+                  <h3 className="text-2xl font-semibold text-blue-400 mb-4">{section.title}</h3>
                   <div className="space-y-4">
                     <input
                       type="text"
                       value={currentLesson.title}
-                      onChange={(e) =>
-                        setCurrentLesson((prev) => ({
-                          ...prev,
-                          title: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setCurrentLesson(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="Lesson Title"
                       className="w-full p-3 bg-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <textarea
                       value={currentLesson.description}
-                      onChange={(e) =>
-                        setCurrentLesson((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setCurrentLesson(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Lesson Description"
                       className="w-full p-3 bg-gray-700 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none"
                     />
@@ -622,22 +422,18 @@ export default function CourseForm() {
                       )}
                     </div>
                     {currentLesson.videoUrl && (
-                      <p className="text-green-400">
-                        Video uploaded successfully!
-                      </p>
+                      <p className="text-green-400">Video uploaded successfully!</p>
                     )}
                     <button
                       onClick={() => setShowS3Selector(!showS3Selector)}
                       className="w-full px-6 py-3 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition duration-300 flex items-center justify-center"
                     >
                       <FontAwesomeIcon icon={faFolder} className="mr-2" />
-                      {showS3Selector ? "Hide S3 Selector" : "Select from S3"}
+                      {showS3Selector ? 'Hide S3 Selector' : 'Select from S3'}
                     </button>
                     {showS3Selector && (
                       <div className="bg-gray-700 p-4 rounded-md max-h-60 overflow-y-auto">
-                        <h4 className="text-lg font-semibold text-blue-400 mb-2">
-                          Select from S3:
-                        </h4>
+                        <h4 className="text-lg font-semibold text-blue-400 mb-2">Select from S3:</h4>
                         {renderFolderStructure(folderStructure)}
                       </div>
                     )}
@@ -656,84 +452,18 @@ export default function CourseForm() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                       onClick={(e: any) => {
-                        e.stopPropagation();
+                        e.stopPropagation(); 
                         setSelectedSectionId(section.id);
                         setSelectedLessonId(lesson.id);
                         setCurrentLesson(lesson);
                       }}
                       className={`mt-6 bg-gray-700 p-4 rounded-md cursor-pointer ${
-                        selectedLessonId === lesson.id
-                          ? "border border-gray-600"
-                          : ""
+                        selectedLessonId === lesson.id ? 'border border-gray-600' : ''
                       }`}
                     >
-                      <h4 className="text-xl font-medium text-blue-300 mb-2">
-                        {lesson.title}
-                      </h4>
-                      <p className="text-sm text-gray-400 mb-4">
-                        {lesson.description}
-                      </p>
-                      <div className="space-y-4">
-                        <input
-                          type="text"
-                          value={currentQuiz.question}
-                          onChange={(e) =>
-                            setCurrentQuiz((prev) => ({
-                              ...prev,
-                              question: e.target.value,
-                            }))
-                          }
-                          placeholder="Quiz Question"
-                          className="w-full p-3 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        {currentQuiz.options.map((option, optionIndex) => (
-                          <input
-                            key={optionIndex}
-                            type="text"
-                            value={option}
-                            onChange={(e) => {
-                              const newOptions = [...currentQuiz.options];
-                              newOptions[optionIndex] = e.target.value;
-                              setCurrentQuiz((prev) => ({
-                                ...prev,
-                                options: newOptions,
-                              }));
-                            }}
-                            placeholder={`Option ${optionIndex + 1}`}
-                            className="w-full p-3 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        ))}
-                        <input
-                          type="text"
-                          value={currentQuiz.answer}
-                          onChange={(e) =>
-                            setCurrentQuiz((prev) => ({
-                              ...prev,
-                              answer: e.target.value,
-                            }))
-                          }
-                          placeholder="Correct Answer"
-                          className="w-full p-3 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                          onClick={addQuiz}
-                          className="w-full px-6 py-3 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
-                        >
-                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                          Add Quiz
-                        </button>
-                      </div>
-                      {lesson.quizzes.map((quiz, quizIndex) => (
-                        <div
-                          key={quiz.id}
-                          className="mt-4 bg-gray-600 p-3 rounded-md"
-                        >
-                          <p className="font-medium text-white">
-                            {quiz.question}
-                          </p>
-                        </div>
-                      ))}
-                    </motion.div>
+                      <h4 className="text-xl font-medium text-blue-300 mb-2">{lesson.title}</h4>
+                      <p className="text-sm text-gray-400 mb-4">{lesson.description}</p>
+                     </motion.div>
                   ))}
                 </motion.div>
               ))}
@@ -748,21 +478,23 @@ export default function CourseForm() {
   return (
     <div className="min-h-screen text-white p-6">
       <div className="max-w-4xl mx-auto border border-slate-900 bg-black/40 p-8 rounded-xl shadow-lg backdrop-blur-sm">
-        <motion.h1
+        <motion.h1 
           className="sm: text-3xl sm: ml-[-5px] md:text-5xl lg:text-6xl xl:text-6xl 2xl:text-7xl font-extrabold leading-tight text-center bg-clip-text text-transparent w-full mx-6 pb-4 xl:leading-snug dark:bg-gradient-to-b dark:from-blue-600 dark:via-gray-600 dark:to-white"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          Create New Course
+          Create New Pathway
         </motion.h1>
 
         <ErrorMessage message={error} />
 
-        <SuccessMessage message={successMessage} />
+       <SuccessMessage message={successMessage} />
 
-        <AnimatePresence mode="wait">{renderStep()}</AnimatePresence>
-
+        <AnimatePresence mode="wait">
+          {renderStep()}
+        </AnimatePresence>
+        
         <motion.div
           className="mt-8 flex justify-between"
           initial={{ opacity: 0, y: 20 }}
@@ -800,3 +532,4 @@ export default function CourseForm() {
     </div>
   );
 }
+

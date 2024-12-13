@@ -1,15 +1,11 @@
-import React, { useState, useEffect, ChangeEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FetchFoldersFromS3,
-  deleteFolderFromS3,
-  uploadToS3,
-} from "../utils/s3upload";
-import { FolderIcon, UploadIcon, PlusIcon, Trash } from "lucide-react";
-import { SuccessMessage } from "./SuccessMessage";
-import { ErrorMessage } from "./ErrorMessage";
-import { bucketName } from "../utils/contants";
-import Loader from "./Loder";
+import { useState, ChangeEvent, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FetchFoldersFromS3, deleteFolderFromS3, uploadToS3 } from '../utils/s3upload';
+import { FolderIcon, UploadIcon, PlusIcon, FolderPlusIcon, Trash } from 'lucide-react';
+import { SuccessMessage } from './SuccessMessage';
+import { ErrorMessage } from './ErrorMessage';
+import { bucketName } from '../utils/contants';
+import Loader from './Loder';
 
 interface UploadProgress {
   fileName: string;
@@ -223,6 +219,17 @@ export default function UploadVideoToS3() {
                 <button
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
                   onClick={() => handleCreateAFolder(index)}
+
+            <AnimatePresence>
+              {userFolders.map((folder) => (
+                <motion.div
+                  key={folder}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gray-800 rounded-lg p-4 mb-4 hover:bg-gray-700 transition duration-200"
+
                 >
                   <PlusIcon className="w-5 h-5 inline-block" /> Add Subfolder
                 </button>
