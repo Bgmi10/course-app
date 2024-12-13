@@ -15,6 +15,7 @@ import UploadVideoToS3 from "./components/UploadVideoToS3";
 import EventManagement from "./components/EventManagement";
 import EventsEdit from "./components/EventsEdit";
 import StudentEdit from "./components/StudentEdit";
+import PathWay from "./components/PathWay";
 
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
           <Route path="/events-management" element={ <EventManagement /> } />
           <Route path="/events-edit/:id" element={ <EventsEdit /> } />
           <Route path="/student/:id" element={ <StudentEdit />} />
+          <Route path="/pathway" element={ <PathWay /> } />
           </Route>
           {<Route path="/signin" element={ <Signin /> } />}
           <Route path="*" element={ <NotFound /> } />

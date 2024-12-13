@@ -10,20 +10,12 @@ import { bucketName, region_aws } from '../utils/contants';
 import { ErrorMessage } from './ErrorMessage';
 import { SuccessMessage } from './SuccessMessage';
 
-interface Quiz {
-  id: string;
-  question: string;
-  options: string[];
-  answer: string;
-}
-
 interface Lesson {
   id: string;
   title: string;
   description: string;
   videoUrl: string;
   duration: number;
-  quizzes: Quiz[];
 }
 
 interface Section {
@@ -49,7 +41,7 @@ interface FolderItem {
   children?: FolderItem[];
 }
 
-export default function CourseForm() {
+export default function PathWay() {
   const [step, setStep] = useState(1);
   const [course, setCourse] = useState<Course>({
     title: "",
@@ -72,14 +64,8 @@ export default function CourseForm() {
     description: "",
     videoUrl: "",
     duration: 0,
-    quizzes: []
   });
-  const [currentQuiz, setCurrentQuiz] = useState<Quiz>({
-    id: "",
-    question: "",
-    options: ["", "", "", ""],
-    answer: ""
-  });
+
   const [error, setError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -89,8 +75,6 @@ export default function CourseForm() {
   const [folderStructure, setFolderStructure] = useState<FolderItem[]>([]);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [showS3Selector, setShowS3Selector] = useState<boolean>(false);
-
-  console.log(course);
 
   useEffect(() => {
     fetchRootFolders();
@@ -147,19 +131,15 @@ export default function CourseForm() {
   };
   
   const addSection = () => {
-    if (currentSection.title.trim()) {
+   
       setCourse(prev => ({
         ...prev,
         sections: [...prev.sections, { ...currentSection, id: `section_${Date.now()}` }]
       }));
       setCurrentSection({ id: "", title: "", lessons: [] });
-    } else {
-      setError("Section title cannot be empty");
-    }
   };
 
   const addLesson = () => {
-    if (currentLesson.title.trim() && selectedSectionId) {
       setCourse(prev => ({
         ...prev,
         sections: prev.sections.map(section =>
@@ -168,75 +148,20 @@ export default function CourseForm() {
             : section
         )
       }));
-      setCurrentLesson({ id: "", title: "", description: "", videoUrl: "", duration: 0, quizzes: [] });
+      setCurrentLesson({ id: "", title: "", description: "", videoUrl: "", duration: 0 });
       setShowS3Selector(false);
-    } else {
-      setError("Lesson title cannot be empty and a section must be selected");
-    }
-  };
-
-  const addQuiz = () => {
-    if (
-      currentQuiz.question.trim() && 
-      selectedSectionId && 
-      selectedLessonId
-    ) {
-      const newQuiz = {
-        ...currentQuiz,
-        id: `quiz_${Date.now()}`
-      };
-  
-      setCourse(prev => {
-        const updatedSections = prev.sections.map(section => {
-          if (section.id === selectedSectionId) {
-            return {
-              ...section,
-              lessons: section.lessons.map(lesson => {
-                if (lesson.id === selectedLessonId) {
-                  return {
-                    ...lesson,
-                    quizzes: [...lesson.quizzes, newQuiz]
-                  };
-                }
-                return lesson;
-              })
-            };
-          }
-          return section;
-        });
-  
-        return {
-          ...prev,
-          sections: updatedSections
-        };
-      });
-  
-      setCurrentQuiz({ 
-        id: "", 
-        question: "", 
-        options: ["", "", "", ""], 
-        answer: "" 
-      });
-    } else {
-      setError("Quiz question cannot be empty and a lesson must be selected");
-    }
   };
 
   const handleSubmit = async () => {
-    if (!course.title || !course.description || course.price === '' || !course.language) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
     try {
-      const courseId = `course_${Date.now()}`;
-      const courseRef = ref(db, "courses/" + courseId);
+      const courseId = `pathway_${Date.now()}`;
+      const courseRef = ref(db, "pathway/" + courseId);
       const finalCourse: Course = {
         ...course,
       };
 
       await set(courseRef, finalCourse);
-      setSuccessMessage('Course created successfully!');
+      setSuccessMessage('Pathway created successfully!');
       setCourse({ title: "", description: "", price: "",imageFiles: [],language: "",sections: [],categoryId: "", instructorId: "" });
     } catch (e) {
       console.error(e);
@@ -250,7 +175,7 @@ export default function CourseForm() {
     try {
       const uploadedUrls = await Promise.all(
         acceptedFiles.map(async (file, index) => {
-          const url = await uploadToS3(file, 'course-images');
+          const url = await uploadToS3(file, 'pathway-images');
           setUploadProgress((prev) => prev + (100 / acceptedFiles.length));
           return url;
         })
@@ -277,7 +202,7 @@ export default function CourseForm() {
       setIsUploading(true);
       setUploadProgress(0);
       try {
-        const url = await uploadToS3(file, 'course-videos');
+        const url = await uploadToS3(file, 'pathway-videos');
         setCurrentLesson((prev) => ({ ...prev, videoUrl: url }));
         setSuccessMessage('Video uploaded successfully!');
       } catch (error) {
@@ -354,7 +279,7 @@ export default function CourseForm() {
                 name="title"
                 value={course.title}
                 onChange={handleFormChange}
-                placeholder="Course Title"
+                placeholder="Pathway Title"
                 className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -362,7 +287,7 @@ export default function CourseForm() {
                 name="description"
                 value={course.description}
                 onChange={handleFormChange}
-                placeholder="Course Description"
+                placeholder="Pathway Description"
                 className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 h-32 resize-none"
                 required
               />
@@ -373,7 +298,6 @@ export default function CourseForm() {
                 onChange={handleFormChange}
                 placeholder="Price"
                 className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
               />
               <input
                 type="text"
@@ -539,49 +463,7 @@ export default function CourseForm() {
                     >
                       <h4 className="text-xl font-medium text-blue-300 mb-2">{lesson.title}</h4>
                       <p className="text-sm text-gray-400 mb-4">{lesson.description}</p>
-                      <div className="space-y-4">
-                        <input
-                          type="text"
-                          value={currentQuiz.question}
-                          onChange={(e) => setCurrentQuiz(prev => ({ ...prev, question: e.target.value }))}
-                          placeholder="Quiz Question"
-                          className="w-full p-3 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        {currentQuiz.options.map((option, optionIndex) => (
-                          <input
-                            key={optionIndex}
-                            type="text"
-                            value={option}
-                            onChange={(e) => {
-                              const newOptions = [...currentQuiz.options];
-                              newOptions[optionIndex] = e.target.value;
-                              setCurrentQuiz(prev => ({ ...prev, options: newOptions }));
-                            }}
-                            placeholder={`Option ${optionIndex + 1}`}
-                            className="w-full p-3 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          />
-                        ))}
-                        <input
-                          type="text"
-                          value={currentQuiz.answer}
-                          onChange={(e) => setCurrentQuiz(prev => ({ ...prev, answer: e.target.value }))}
-                          placeholder="Correct Answer"
-                          className="w-full p-3 bg-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                          onClick={addQuiz}
-                          className="w-full px-6 py-3 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
-                        >
-                          <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                          Add Quiz
-                        </button>
-                      </div>
-                      {lesson.quizzes.map((quiz, quizIndex) => (
-                        <div key={quiz.id} className="mt-4 bg-gray-600 p-3 rounded-md">
-                          <p className="font-medium text-white">{quiz.question}</p>
-                        </div>
-                      ))}
-                    </motion.div>
+                     </motion.div>
                   ))}
                 </motion.div>
               ))}
@@ -602,7 +484,7 @@ export default function CourseForm() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          Create New Course
+          Create New Pathway
         </motion.h1>
 
         <ErrorMessage message={error} />
