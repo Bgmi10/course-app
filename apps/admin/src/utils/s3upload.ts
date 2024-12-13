@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk';
-import {DeleteObjectsCommand, ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
+import { DeleteObjectsCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { region_aws } from './contants';
 
 AWS.config.update({
@@ -11,18 +11,22 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 const S3 = new S3Client({
-    region: region_aws,
-    credentials : {
+  region: region_aws,
+  credentials: {
     accessKeyId: import.meta.env.VITE_APP_AWS_ACCESS_KEY_ID as string,
-    secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY as string
-  }
+    secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY as string,
+  },
+});
 
-})
-
-export const uploadToS3 = async (file: File, folderName: string): Promise<string> => {
-
+export const uploadToS3 = async (
+  file: File,
+  folderName: string,
+  onProgress: (percentage: number) => void
+): Promise<string> => {
   const fileName = `${Date.now()}_${file.name}`;
-  const key = `${folderName}/${fileName}`
+
+  var lastChar = folderName.substr(folderName.length - 1);
+  const key = (lastChar == '/') ? `${folderName}${fileName}` : `${folderName}/${fileName}`;
   const params: AWS.S3.PutObjectRequest = {
     Bucket: import.meta.env.VITE_APP_AWS_BUCKET_NAME,
     Key: key,
@@ -31,8 +35,14 @@ export const uploadToS3 = async (file: File, folderName: string): Promise<string
   };
 
   try {
-    const { Location } = await s3.upload(params).promise();
-    return Location;
+    const managedUpload = s3.upload(params);
+    managedUpload.on('httpUploadProgress', (progress) => {
+      const percentage = Math.round((progress.loaded / (progress.total || 1)) * 100);
+      onProgress(percentage);
+    });
+
+    const location = await managedUpload.promise();
+    return location.Location;
   } catch (error) {
     console.error('Error uploading file:', error);
     throw new Error('File upload failed');
@@ -40,7 +50,7 @@ export const uploadToS3 = async (file: File, folderName: string): Promise<string
 };
 
 export const deleteFromS3 = async (fileUrl: string): Promise<void> => {
-  if(fileUrl === '') return;
+  if (fileUrl === '') return;
   const decodedUrl = decodeURIComponent(fileUrl);
   const key = decodedUrl.split('/').slice(3).join('/');
   const params: AWS.S3.DeleteObjectRequest = {
@@ -56,26 +66,28 @@ export const deleteFromS3 = async (fileUrl: string): Promise<void> => {
   }
 };
 
-
 export const FetchFoldersFromS3 = async (
-  bucketName: string, 
-  prefix: string = '', 
+  bucketName: string,
+  prefix: string = '',
   delimiter: string = '/'
-): Promise<{ folders: string[], files: string[] }> => {
-
+): Promise<{ folders: string[]; files: string[] }> => {
   try {
     const params = {
       Bucket: bucketName,
-      Prefix: prefix,     
-      Delimiter: delimiter        
+      Prefix: prefix,
+      Delimiter: delimiter,
     };
-    
+
     const command = new ListObjectsV2Command(params);
     const data = await S3.send(command);
-    
-    const folders = (data?.CommonPrefixes?.map((item) => item.Prefix) || []).filter((prefix): prefix is string => !!prefix);
-    
-    const files = (data?.Contents?.map((i) => i.Key || '') || []).filter((key): key is string => !!key);
+
+    const folders = (data?.CommonPrefixes?.map((item) => item.Prefix) || []).filter(
+      (prefix): prefix is string => !!prefix
+    );
+
+    const files = (data?.Contents?.map((i) => i.Key || '') || []).filter(
+      (key): key is string => !!key
+    );
 
     for (const folder of folders.slice()) {
       const nested = await FetchFoldersFromS3(bucketName, folder);
@@ -88,9 +100,6 @@ export const FetchFoldersFromS3 = async (
     throw new Error('Failed to fetch folders from S3');
   }
 };
-
-
-
 
 export const deleteFolderFromS3 = async (folderName: string) => {
   if (folderName === '') return;

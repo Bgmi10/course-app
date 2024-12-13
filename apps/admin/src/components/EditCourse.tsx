@@ -323,7 +323,9 @@ export default function EditCourse() {
     try {
       const uploadedUrls = await Promise.all(
         acceptedFiles.map(async (file, index) => {
-          const url = await uploadToS3(file, 'course-images');
+          const url = await uploadToS3(file, 'course-images', (percentage) => {
+            setUploadProgress(percentage);
+          });
           setUploadProgress((prev) => prev + (100 / acceptedFiles.length));
           return url;
         })
@@ -369,7 +371,9 @@ export default function EditCourse() {
       }
   
       // 3. Upload the new video to S3
-      const newVideoUrl = await uploadToS3(file, 'course-videos');
+      const newVideoUrl = await uploadToS3(file, 'course-videos', (percentage) => {
+        setUploadProgress(percentage);
+      });
   
       // 4. Update the lesson with the new video URL
       setCourse(prev => {

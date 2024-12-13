@@ -13,19 +13,21 @@ import { Loader2Icon } from 'lucide-react';
 import Loader from './Loder';
 
 interface Data{
-    id: string;
-    capacity: number;
-    createdBy: string;
-    date: string;
-    description: string;
-    endTime: string;
-    endTimeAMPM: string;
-    location: string;
-    startTime: string;
-    startTimeAMPM: string;
-    status: string;
-    thumbnail: string[];
-    title: string;
+  id: string;
+  capacity: number;
+  createdBy: string;
+  date: string;
+  description: string;
+  endTime: string;
+  endTimeAMPM: string;
+  location: string;
+  startTime: string;
+  startTimeAMPM: string;
+  status: string;
+  thumbnail: string[];
+  title: string;
+  speaker: string; // New field
+  price: number;   // New field
 }
 
 export default function EventsEdit() {
@@ -108,7 +110,9 @@ export default function EventsEdit() {
     setUploadProgress(0);
     try {
       const file = acceptedFiles[0];
-      const uploadFiles = acceptedFiles?.map((i) => uploadToS3(i, 'events-thumbnails'));
+      const uploadFiles = acceptedFiles?.map((i) => uploadToS3(i, 'events-thumbnails', (percentage) =>{
+        setUploadProgress(percentage);
+      }));
       const urls = await Promise.all(uploadFiles);
       //@ts-ignore
       setData(prev => prev ? { ...prev, thumbnail: [...prev.thumbnail, urls]} : null);
@@ -282,6 +286,27 @@ export default function EventsEdit() {
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!editMode}
             />
+            <input
+            type="text"
+            name="speaker"
+            value={data.speaker}
+            onChange={handleInputChange}
+            placeholder="Event Speaker"
+            className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={!editMode}
+          />
+
+          <input
+            type="number"
+            name="price"
+            value={data.price}
+            onChange={handleInputChange}
+            placeholder="Event Price ($)"
+            className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={!editMode}
+            min="0"
+            step="0.01"
+          />
           </div>
 
           {

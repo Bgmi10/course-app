@@ -24,6 +24,8 @@ interface Form {
   date: string
   startTimeAMPM: 'AM' | 'PM';
   endTimeAMPM: 'AM' | 'PM';
+  speaker: string;
+  price: number;
 }
 
 export default function EventCreation() {
@@ -42,8 +44,9 @@ export default function EventCreation() {
     date: '',
     startTimeAMPM: 'AM',
     endTimeAMPM: 'PM',
+    speaker: '',
+    price: 0,
   });
-  console.log(form.thumbnail)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -62,6 +65,14 @@ export default function EventCreation() {
     }
   }
 
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    // Allow decimal prices with two decimal places
+    if (value === '' || /^\d+(\.\d{0,2})?$/.test(value)) {
+      setForm(prev => ({ ...prev, price: parseFloat(value) || 0 }))
+    }
+  }
+
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     if (name.endsWith('AMPM')) {
@@ -76,7 +87,9 @@ export default function EventCreation() {
     setIsUploading(true)
     setUploadProgress(0)
     try {
-      const url = acceptedFiles.map((i) => uploadToS3(i,'events-thumbnails'));
+      const url = acceptedFiles.map((i) => uploadToS3(i,'events-thumbnails', (percentage) => {
+        setUploadProgress(percentage);
+      }));
       const urls = await Promise.all(url);
       setForm((prev : any) => ({ ...prev, thumbnail: [...prev.thumbnail, urls]}));
       setSuccess('Thumbnail uploaded successfully!')
@@ -92,7 +105,10 @@ export default function EventCreation() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
   const handleSubmit = async () => {
-    if (!form.title || !form.capacity || !form.date || !form.description || !form.endTime || !form.location || !form.startTime || !form.thumbnail) {
+    // Validate all required fields
+    if (!form.title || !form.capacity || !form.date || !form.description 
+        || !form.endTime || !form.location || !form.startTime 
+        || !form.thumbnail || !form.speaker) {
       setError('All fields are required')
       return
     }
@@ -110,6 +126,8 @@ export default function EventCreation() {
       })
       setSuccess('Event created successfully!')
       navigate('/events-management')
+      
+      // Reset form to initial state
       setForm({
         title: '',
         description: '',
@@ -124,6 +142,8 @@ export default function EventCreation() {
         date: '',
         startTimeAMPM: 'AM',
         endTimeAMPM: 'PM',
+        speaker: '',
+        price: 0,
       })
     } catch (e) {
       console.error(e)
@@ -165,6 +185,15 @@ export default function EventCreation() {
               value={form.location}
               onChange={handleFormChange}
               placeholder="Event Location"
+              className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <input
+              type="text"
+              name="speaker"
+              value={form.speaker}
+              onChange={handleFormChange}
+              placeholder="Event Speaker"
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -227,11 +256,21 @@ export default function EventCreation() {
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-             <input
+            <input
               type="text"
               name="capacity"
-              value={form.capacity}
-              onChange={handleFormChange}
+              value={(form.capacity) != 0 ? form.capacity : ''}
+              onChange={handleCapacityChange}
+              placeholder="Event Capacity"
+              className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <input
+              type="text"
+              name="price"
+              value={(form.price) != 0 ? form.price : ''} 
+              onChange={handlePriceChange}
+              placeholder="Event Price ($)"
               className="w-full p-3 bg-gray-800 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -265,21 +304,23 @@ export default function EventCreation() {
             )}
             {form.thumbnail.length > 0  && (
               <div className="relative group">
-                {form.thumbnail?.map((i, index) =>
-                <>
-                <div key={index} className='m-3 p-1'>
-                 <img src={i} alt="Event thumbnail" className="w-60 h-32 rounded-md" />
-                 <button
-                   onClick={async () => {await deleteFromS3(i);
-                    setForm(prev => ({ ...prev, thumbnail: [...prev.thumbnail.filter((item) => item !== i)]}))}}
-                   className="top-4 mt-4 right-2 bg-red-500  text-white rounded-full p-2 group-hover:opacity-100 transition-opacity duration-300"
-                 >
-                   <FontAwesomeIcon icon={faTimes} />
-                 </button>
-                 </div>
-
-                </>
-                )}
+                {form.thumbnail?.map((i, index) => (
+                  <div key={index} className='m-3 p-1'>
+                    <img src={i} alt="Event thumbnail" className="w-60 h-32 rounded-md" />
+                    <button
+                      onClick={async () => {
+                        await deleteFromS3(i);
+                        setForm(prev => ({ 
+                          ...prev, 
+                          thumbnail: [...prev.thumbnail.filter((item) => item !== i)]
+                        }))
+                      }}
+                      className="top-4 mt-4 right-2 bg-red-500 text-white rounded-full p-2 group-hover:opacity-100 transition-opacity duration-300"
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </motion.div>
