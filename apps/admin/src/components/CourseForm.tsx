@@ -128,8 +128,7 @@ export default function CourseForm() {
         folderPath,
         "/"
       );
-      const { folders, files } = await FetchFoldersFromS3(bucketName, folderPath, '/');
-
+ 
       return [
         ...folders.map((folder) => ({ name: folder, type: "folder" as const })),
         ...files.map((file) => ({ name: file, type: "file" as const })),

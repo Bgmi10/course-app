@@ -1,7 +1,16 @@
 import { useState, ChangeEvent, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FetchFoldersFromS3, deleteFolderFromS3, uploadToS3 } from '../utils/s3upload';
-import { FolderIcon, UploadIcon, PlusIcon, FolderPlusIcon, Trash } from 'lucide-react';
+import {
+  FetchFoldersFromS3,
+  deleteFolderFromS3,
+  uploadToS3,
+} from '../utils/s3upload';
+import {
+  FolderIcon,
+  UploadIcon,
+  PlusIcon,
+  Trash,
+} from 'lucide-react';
 import { SuccessMessage } from './SuccessMessage';
 import { ErrorMessage } from './ErrorMessage';
 import { bucketName } from '../utils/contants';
@@ -13,17 +22,13 @@ interface UploadProgress {
 }
 
 export default function UploadVideoToS3() {
-  const [userInput, setUserInput] = useState<string>("");
-  const [subfoldername, setSubFolderName] = useState<Record<number, string>>(
-    {}
-  );
+  const [userInput, setUserInput] = useState<string>('');
+  const [subfoldername, setSubFolderName] = useState<Record<number, string>>({});
   const [userFolders, setUserFolders] = useState<string[]>([]);
-  const [message, setMessage] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [message, setMessage] = useState<string>('');
+  const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [uploadProgress, setUploadProgress] = useState<
-    Record<string, UploadProgress[]>
-  >({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress[]>>({});
 
   useEffect(() => {
     const fetchS3Folders = async () => {
@@ -31,8 +36,8 @@ export default function UploadVideoToS3() {
         const { folders } = await FetchFoldersFromS3(bucketName);
         setUserFolders(folders);
       } catch (error) {
-        console.error("Error fetching folders:", error);
-        setError("Failed to load folders from S3.");
+        console.error('Error fetching folders:', error);
+        setError('Failed to load folders from S3.');
       } finally {
         setIsLoading(false);
       }
@@ -41,18 +46,17 @@ export default function UploadVideoToS3() {
   }, []);
 
   const handleCreateAFolder = (parentIndex: any = null) => {
-    let folderName =
-      parentIndex === null ? userInput : subfoldername[parentIndex] || "";
+    let folderName = parentIndex === null ? userInput : subfoldername[parentIndex] || '';
 
     if (!folderName) {
-      setError("Please provide a folder name");
+      setError('Please provide a folder name');
       return;
     }
     let newFolder: string;
     if (parentIndex === null) {
       newFolder = `${folderName}/`;
     } else {
-      const parentFolder = userFolders[parentIndex].endsWith("/")
+      const parentFolder = userFolders[parentIndex].endsWith('/')
         ? userFolders[parentIndex].slice(0, -1)
         : userFolders[parentIndex];
       newFolder = `${parentFolder}/${folderName}/`;
@@ -60,8 +64,8 @@ export default function UploadVideoToS3() {
 
     setUserFolders((prev) => [...prev, newFolder]);
     setMessage(`Folder "${newFolder}" created successfully`);
-    setUserInput("");
-    setSubFolderName((prev) => ({ ...prev, [parentIndex]: "" }));
+    setUserInput('');
+    setSubFolderName((prev) => ({ ...prev, [parentIndex]: '' }));
   };
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>, folderPath: string) => {
@@ -70,22 +74,22 @@ export default function UploadVideoToS3() {
       setError('Please select files to upload');
       return;
     }
-  
+
     const fileArray = Array.from(files);
-  
+
     try {
       // Upload files in parallel using Promise.all
       await Promise.all(
         fileArray.map((file) => {
           const fileName = file.name;
           const uniqueId = `${folderPath}-${Date.now()}-${fileName}`;
-  
+
           // Add upload progress placeholder
           setUploadProgress((prev) => ({
             ...prev,
             [folderPath]: [...(prev[folderPath] || []), { fileName, progress: 0 }],
           }));
-  
+
           return uploadToS3(file, folderPath, (percentage) => {
             // Update progress for each file
             setUploadProgress((prev) => {
@@ -124,7 +128,6 @@ export default function UploadVideoToS3() {
       setError('Failed to upload some files. Please try again.');
     }
   };
-  
 
   const handleDelete = async (folderPath: string) => {
     try {
@@ -135,7 +138,7 @@ export default function UploadVideoToS3() {
       );
     } catch (e) {
       console.error(e);
-      setError("Failed to delete folder. Please try again.");
+      setError('Failed to delete folder. Please try again.');
     }
   };
 
@@ -169,7 +172,7 @@ export default function UploadVideoToS3() {
             <input
               type="text"
               placeholder="Create Folder Name"
-              className="flex-1 border p-2 rounded-md text-black"
+              className="flex-1 border border-gray-700 outline-none p-2 rounded-md text-white bg-gray-800"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
             />
@@ -207,8 +210,8 @@ export default function UploadVideoToS3() {
                 <input
                   type="text"
                   placeholder="Create Subfolder"
-                  className="flex-1 border p-2 rounded-md text-black"
-                  value={subfoldername[index] || ""}
+                  className="flex-1 border p-2 rounded-md text-black bg-gray-800 outline-none border-gray-600"
+                  value={subfoldername[index] || ''}
                   onChange={(e) =>
                     setSubFolderName((prev) => ({
                       ...prev,
@@ -219,17 +222,6 @@ export default function UploadVideoToS3() {
                 <button
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
                   onClick={() => handleCreateAFolder(index)}
-
-            <AnimatePresence>
-              {userFolders.map((folder) => (
-                <motion.div
-                  key={folder}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gray-800 rounded-lg p-4 mb-4 hover:bg-gray-700 transition duration-200"
-
                 >
                   <PlusIcon className="w-5 h-5 inline-block" /> Add Subfolder
                 </button>
@@ -251,20 +243,23 @@ export default function UploadVideoToS3() {
                 />
               </div>
 
-              {uploadProgress[folder] &&
-                uploadProgress[folder].map(({ fileName, progress }) => (
-                  <div key={fileName} className="mt-4">
-                    <div className="bg-gray-600 rounded-full h-4">
-                      <div
-                        className="bg-blue-500 h-4 rounded-full transition-all duration-500"
-                        style={{ width: `${progress}%` }}
-                      ></div>
+              {uploadProgress[folder] && uploadProgress[folder].length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {uploadProgress[folder].map(({ fileName, progress }) => (
+                    <div key={fileName} className="relative">
+                      <div className="h-2 bg-gray-300 rounded-full">
+                        <div
+                          className="h-full bg-green-500 rounded-full"
+                          style={{ width: `${progress}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-gray-400 mt-1 inline-block">
+                        {fileName} - {progress.toFixed(2)}%
+                      </span>
                     </div>
-                    <span className="text-sm font-medium">
-                      {fileName}: {progress}% Uploaded
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

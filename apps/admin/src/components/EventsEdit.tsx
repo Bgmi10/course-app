@@ -1,15 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDown, faAngleUp, faPencilAlt, faTrash, faUpload, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPencilAlt, faTrash, faUpload, faSave, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { child, get, ref, update, remove } from "firebase/database";
 import { db } from "../utils/firebase";
 import { uploadToS3, deleteFromS3 } from '../utils/s3upload';
 import { useDropzone } from 'react-dropzone';
 import { ErrorMessage } from './ErrorMessage';
 import { SuccessMessage } from './SuccessMessage';
-import { Loader2Icon } from 'lucide-react';
 import Loader from './Loder';
 
 interface Data{
