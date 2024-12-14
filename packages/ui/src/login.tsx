@@ -4,7 +4,7 @@ import { validEmail } from "../utils/validEmail";
 import { auth } from "../utils/firebase";
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faUserFriends, faPlus, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from "react-router-dom";
 
 export default function Signin() {
@@ -79,9 +79,33 @@ export default function Signin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col m-5 ">
+        <div className="flex flex-col">
+          <span className="font-normal text-2xl">SecX</span>
+          <span className="font-normal text-4xl">Start your 1-day free trail</span>
+         </div>
+         <div className="mt-5">
+           <div>
+           <FontAwesomeIcon icon={faPlus} className="absolute ml-[-10px]  text-sm text-[#00D1FF]" />
+           <FontAwesomeIcon icon={faUserFriends} className="text-[#00D1FF] text-xl" />
+           </div>
+           <div className="flex mt-2 flex-col">
+             <span className="font-normal text-3xl">Invite people to join your mining</span>
+             <span className="text-3xl font-normal">network</span>
+             <span className="font-2xl text-gray-500">Grow your network to increase your mining speed</span>
+           </div>
+         </div>
+         <div className="flex flex-col mt-5">
+           <FontAwesomeIcon icon={faCheckCircle} className="text-[#00D1FF]  text-2xl mr-[570px]" />
+           <span className="text-3xl mt-5 font-normal">Enjoy Verfied Courses</span>
+           <span className="font-normal text-gray-500 text-md">Courses which are tailormade for you and will help</span>
+           <span className="text-gray-500 font-normal text-md">you gain your professional goals</span>
+           <span className="mt-8 text-4xl">Upskill your learning journey With live events and quizzes</span>
+         </div>
+      </div>
       <div className="w-full max-w-[400px] space-y-6 p-8 rounded-xl bg-zinc-800 border border-zinc-700">
         <div className="space-y-2 text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-purple-500">Login with</h1>
+          <span className="bg-transparent bg-clip-text text-transparent bg-gradient-to-r from-[#5F05FF]  to-[#05BFF1] text-2xl font-semibold">Login with</span>
         </div>
 
         <button
@@ -147,6 +171,9 @@ export default function Signin() {
             {loading ? <FontAwesomeIcon icon={faSpinner} spin aria-hidden="true" /> : "Login"}
           </button>
         </form>
+        <div className="text-center">
+          <span className="center">Don`t have an account? <span className="text-[#2b52ff] cursor-pointer hover:text-[#4357b3]" onClick={() => window.location.href = "/signin"}>Register</span></span>
+        </div>
       </div>
     </div>
   );

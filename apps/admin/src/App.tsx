@@ -15,6 +15,8 @@ import EventManagement from "./components/EventManagement";
 import EventsEdit from "./components/EventsEdit";
 import StudentEdit from "./components/StudentEdit";
 import PathWay from "./components/PathWay";
+//@ts-ignore
+import Login from "@repo/ui/login"
 
 
 function App() {
@@ -46,6 +48,7 @@ function App() {
           <Route path="/student/:id" element={ <StudentEdit />} />
           <Route path="/pathway" element={ <PathWay /> } />
           </Route>
+          <Route path="/signin" element={ <Login /> } /> 
           <Route path="*" element={ <NotFound /> } />
         </Routes>
       </Router>
