@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faArrowRight, faCheck, faPlus, faUpload, faTimes, faFolder, faFile, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { ref, set } from "firebase/database";
-import { db } from "../utils/firebase";
-import { uploadToS3, FetchFoldersFromS3 } from '../utils/s3upload';
+import { db } from "@secx/utils/src/firebase";
+import { uploadToS3, FetchFoldersFromS3 } from '@secx/utils/src/s3upload';
 import { useDropzone } from 'react-dropzone';
-import { bucketName, region_aws } from '../utils/contants';
+import { bucketName, region_aws } from '@secx/utils/src/constants';
 import { ErrorMessage } from './ErrorMessage';
 import { SuccessMessage } from './SuccessMessage';
 

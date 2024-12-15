@@ -4,7 +4,7 @@ import {
   FetchFoldersFromS3,
   deleteFolderFromS3,
   uploadToS3,
-} from '../utils/s3upload';
+} from '@secx/utils/src/s3upload';
 import {
   FolderIcon,
   UploadIcon,
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { SuccessMessage } from './SuccessMessage';
 import { ErrorMessage } from './ErrorMessage';
-import { bucketName } from '../utils/contants';
+import { bucketName } from '@secx/utils/src/constants';
 import Loader from './Loder';
 
 interface UploadProgress {

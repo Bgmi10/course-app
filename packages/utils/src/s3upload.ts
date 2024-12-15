@@ -1,6 +1,7 @@
 import AWS from 'aws-sdk';
 import { DeleteObjectsCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
-import { region_aws } from './contants';
+import { region_aws } from './constants';
+
 
 AWS.config.update({
   region: region_aws,
@@ -17,7 +18,7 @@ const S3 = new S3Client({
     secretAccessKey: import.meta.env.VITE_APP_AWS_SECRET_ACCESS_KEY as string,
   },
 });
-
+ 
 export const uploadToS3 = async (
   file: File,
   folderName: string,

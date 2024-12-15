@@ -1,7 +1,7 @@
 import { child, get, ref } from "firebase/database";
 import { motion } from 'framer-motion';
 import { useEffect, useState } from "react";
-import { db } from "../utils/firebase";
+import { db } from "@secx/utils/src/firebase";
 import { Loader2, Search, UserCircle, CheckCircle, Ban } from 'lucide-react';
 import { Link } from "react-router-dom";
 

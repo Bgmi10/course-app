@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { db } from "../utils/firebase";
+import { db } from "@secx/utils/src/firebase";
 import { motion } from 'framer-motion';
 import { child, get, ref } from "firebase/database";
 import { Link } from "react-router-dom";

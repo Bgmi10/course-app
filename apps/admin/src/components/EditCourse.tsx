@@ -4,12 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown, faAngleUp, faPencilAlt, faTrash, faUpload, faSave, faTimes, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { child, get, ref, update, remove } from "firebase/database";
-import { db } from "../utils/firebase";
-import { uploadToS3, deleteFromS3 } from '../utils/s3upload';
+import { db } from "@secx/utils/src/firebase";
+import { uploadToS3, deleteFromS3 } from '@secx/utils/src/s3upload';
 import { useDropzone } from 'react-dropzone';
 import { ErrorMessage } from './ErrorMessage';
 import { SuccessMessage } from './SuccessMessage';
-import { Loader2Icon } from 'lucide-react';
 import Loader from './Loder';
 
 interface Quiz {

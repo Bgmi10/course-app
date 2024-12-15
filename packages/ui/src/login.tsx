@@ -1,115 +1,122 @@
 import { FcGoogle } from "react-icons/fc";
 import React, { useState, useEffect, useRef } from 'react';
-import { validEmail } from "../utils/validEmail";
-import { auth } from "../utils/firebase";
-import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { validEmail } from "@secx/utils/src/ValidEmail";
+import { auth } from "@secx/utils/src/firebase";
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup,createUserWithEmailAndPassword,updateProfile } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUserFriends, faPlus, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from "react-router-dom";
+import LoginPageContent from "./LoginPageContent";
 
 export default function Signin() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '', firstName: '', lastName: ''});
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const router = useNavigate();
   const googleProvider = new GoogleAuthProvider();
-  const emailRef = useRef<any>();
-  const passwordRef = useRef<any>();
+  const firstName = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const registerPath = window.location.pathname === "/register";
 
   useEffect(() => {
-    emailRef.current.focus();
+    firstName.current?.focus();
   }, []);
 
-  const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErr('');
   };
 
-  const handleKeyDown = (e : React.KeyboardEvent<HTMLInputElement>) => {
-
-    const target = e.currentTarget as HTMLInputElement
-    if (e.key === 'Enter' && target.name === 'email') {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && e.currentTarget.name === 'email') {
       e.preventDefault();
-      passwordRef.current.focus();
+      passwordRef.current?.focus();
     }
   };
 
-  const handleSubmit = (e : React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (!form?.email || !form?.password) {
+    if (!form.email || !form.password) {
       setErr('All fields are required');
       setLoading(false);
       return;
     }
 
-    if (!validEmail(form?.email)) {
+    if (!validEmail(form.email)) {
       setErr('Email is not valid');
       setLoading(false);
       return;
     }
 
-    async function login() {
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, form?.email, form?.password);
-        const user = userCredential.user;
-        if(user){
-          navigate('/');
-        }
-        setLoading(false);
-      } catch (E : any) {
-        console.log(E.message);
-        setErr(E.message);
-        setLoading(false);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, form.email, form.password);
+      const user = userCredential.user;
+      if (user) {
+        router('/');
       }
+    } catch (E: any) {
+      console.log(E.message);
+      setErr(E.message);
+    } finally {
+      setLoading(false);
     }
-
-    login();
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!form.email || !form.password || !form.firstName || !form.lastName) {
+      setErr('All fields are required');
+      setLoading(false);
+      return;
+    }
+
+    if (!validEmail(form.email)) {
+      setErr('Email is not valid');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+      const user = userCredential.user;
+
+      if(user){
+        await updateProfile(user, {
+          displayName: `${form.firstName} ${form.lastName}`
+        });
+        router('/');
+      }
+    } catch (E: any) {
+      console.log(E.message);
+      setErr(E.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleGoogleAuth = () => {
-    
-    signInWithPopup(auth, googleProvider).then((res : any) => {
-      navigate('/');
-    }).catch(e => console.log(e.code));
-      
+    signInWithPopup(auth, googleProvider)
+      .then((res: any) => {
+        console.log(res);
+        router('/');
+      })
+      .catch(e => console.log(e.code));
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex flex-col m-5 ">
-        <div className="flex flex-col">
-          <span className="font-normal text-2xl">SecX</span>
-          <span className="font-normal text-4xl">Start your 1-day free trail</span>
-         </div>
-         <div className="mt-5">
-           <div>
-           <FontAwesomeIcon icon={faPlus} className="absolute ml-[-10px]  text-sm text-[#00D1FF]" />
-           <FontAwesomeIcon icon={faUserFriends} className="text-[#00D1FF] text-xl" />
-           </div>
-           <div className="flex mt-2 flex-col">
-             <span className="font-normal text-3xl">Invite people to join your mining</span>
-             <span className="text-3xl font-normal">network</span>
-             <span className="font-2xl text-gray-500">Grow your network to increase your mining speed</span>
-           </div>
-         </div>
-         <div className="flex flex-col mt-5">
-           <FontAwesomeIcon icon={faCheckCircle} className="text-[#00D1FF]  text-2xl mr-[570px]" />
-           <span className="text-3xl mt-5 font-normal">Enjoy Verfied Courses</span>
-           <span className="font-normal text-gray-500 text-md">Courses which are tailormade for you and will help</span>
-           <span className="text-gray-500 font-normal text-md">you gain your professional goals</span>
-           <span className="mt-8 text-4xl">Upskill your learning journey With live events and quizzes</span>
-         </div>
-      </div>
+    <div className="min-h-screen flex flex-col md:flex-row items-center justify-center p-4 text-white">
+      <LoginPageContent />
       <div className="w-full max-w-[400px] space-y-6 p-8 rounded-xl bg-zinc-800 border border-zinc-700">
         <div className="space-y-2 text-center">
-          <span className="bg-transparent bg-clip-text text-transparent bg-gradient-to-r from-[#5F05FF]  to-[#05BFF1] text-2xl font-semibold">Login with</span>
+          <span className="bg-transparent bg-clip-text text-transparent bg-gradient-to-r from-[#5F05FF] to-[#05BFF1] text-2xl font-semibold">{ !registerPath ? "Login with" : "Register with"}</span>
         </div>
 
         <button
-          className="w-full flex justify-center py-2 rounded-md bg-zinc-700 border text-white border-zinc-600 hover:bg-zinc-600 hover:text-white"
+          className="w-full flex justify-center items-center py-2 rounded-md bg-zinc-700 border text-white border-zinc-600 hover:bg-zinc-600 hover:text-white"
           aria-label="Login with Google"
           onClick={handleGoogleAuth}
         >
@@ -126,7 +133,36 @@ export default function Signin() {
           </div>
         </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit} aria-labelledby="login-form">
+        <form className="space-y-4" onSubmit={registerPath ? handleRegister : handleLogin} aria-labelledby="login-form">
+          <div className="flex gap-2 ">
+            { registerPath && <><input
+                id="firstName"
+                name="firstName"
+                type="firstName"
+                placeholder="First Name"
+                className="bg-zinc-700 p-2 rounded-md w-full border border-zinc-600 text-white outline-none placeholder:text-zinc-400 focus:border-purple-500 focus:ring-purple-500"
+                value={form.firstName}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                ref={firstName}
+                aria-label="firstName"
+                aria-describedby="firstName-error"
+                aria-invalid={err ? "true" : "false"}
+            />
+            <input
+              id="lastName"
+              name="lastName"
+              type="lastName"
+              placeholder="Last Name"
+              className="bg-zinc-700 p-2 rounded-md w-full border border-zinc-600 text-white outline-none placeholder:text-zinc-400 focus:border-purple-500 focus:ring-purple-500"
+              value={form.lastName}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              aria-label="lastName"
+              aria-describedby="lastName-error"
+              aria-invalid={err ? "true" : "false"}
+            /> </>}
+          </div>
           <div>
             <input
               id="email"
@@ -134,10 +170,9 @@ export default function Signin() {
               type="email"
               placeholder="Email"
               className="bg-zinc-700 p-2 rounded-md w-full border border-zinc-600 text-white outline-none placeholder:text-zinc-400 focus:border-purple-500 focus:ring-purple-500"
-              value={form?.email}
+              value={form.email}
               onChange={handleChange}
               onKeyDown={handleKeyDown}
-              ref={emailRef}
               aria-label="Email"
               aria-describedby="email-error"
               aria-invalid={err ? "true" : "false"}
@@ -151,30 +186,41 @@ export default function Signin() {
               type="password"
               placeholder="Password"
               className="bg-zinc-700 p-2 rounded-md w-full border border-zinc-600 text-white outline-none placeholder:text-zinc-400 focus:border-purple-500 focus:ring-purple-500"
-              value={form?.password}
+              value={form.password}
               onChange={handleChange}
               ref={passwordRef}
               aria-label="Password"
             />
+            <div className="text-end">
+            {window.location.pathname === "/login" && <span className="font-inter text-[14px] font-normal leading-[16.94px] text-left cursor-pointer  hover:text-gray-300" onClick={()=> router('/forget-password')}>Forget password?</span>}
+            </div>
           </div>
 
-          <div>
-            <span className="font-medium text-red-500">{err && err}</span>
-          </div>
+          {err && (
+            <div>
+              <span className="font-medium text-red-500">{err}</span>
+            </div>
+          )}
 
           <button
-            className="w-full outline-none bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md"
+            className="w-full outline-none bg-blue-600 hover:bg-blue-700 text-white font-inter font-normal py-2 px-4 rounded-md flex justify-center items-center "
             aria-label="Login"
             type="submit"
             disabled={loading}
           >
-            {loading ? <FontAwesomeIcon icon={faSpinner} spin aria-hidden="true" /> : "Login"}
+            {loading ? <FontAwesomeIcon icon={faSpinner} spin aria-hidden="true" /> : !registerPath ? "Login" : "Sign up"}
           </button>
         </form>
-        <div className="text-center">
-          <span className="center">Don`t have an account? <span className="text-[#2b52ff] cursor-pointer hover:text-[#4357b3]" onClick={() => window.location.href = "/signin"}>Register</span></span>
+       {window.location.pathname === "/login" && <div className="text-center">
+          <span className="center font-normal font-inter">Don't have an account? <span className="text-[#2b52ff] cursor-pointer hover:text-[#4357b3]" onClick={() => router("/register")}>Register</span></span>
+        </div>}
+        {
+          registerPath && <div className="text-center">
+          <span className="center font-normal font-inter">Already have an account? <span className="text-[#2b52ff] cursor-pointer hover:text-[#4357b3]" onClick={() => router("/login")}>Login</span></span>
         </div>
+        }
       </div>
     </div>
   );
 }
+
