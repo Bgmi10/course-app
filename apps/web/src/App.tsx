@@ -4,6 +4,7 @@ import Footer from "./components/Footer"
 import Login from "@repo/ui/login";
 import { Forgetpassword } from "@repo/ui/forgetpassword"
 import LearningPlan from "./components/LearningPlan";
+import Profile from "./components/Profile";
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
               <Route path="/register" element={ <Login /> } />
               <Route path="/forget-password" element={ <Forgetpassword /> } />
               <Route path="/learning-plan" element={ <LearningPlan /> } />
+              <Route path="/profile" element={ <Profile /> } />
            </Routes>
         </Router>
         <Footer />

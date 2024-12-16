@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import LearningPlanHeader from "./LearningPlanHeader";
-import { faLock, faMedal, faPlay, faSearch, faTasks } from "@fortawesome/free-solid-svg-icons";
+import { faBrain, faCheck, faClock, faClose, faCoffee, faEllipsisH, faLock, faMedal, faPlay, faSearch, faTasks, faTimes } from "@fortawesome/free-solid-svg-icons";
 import e1 from "../imgs/e1.png";
 import e2 from "../imgs/e2.png";
 import e3 from "../imgs/e3.png";
@@ -21,8 +21,8 @@ export default function LearningPlan (){
                   <FontAwesomeIcon icon={faTasks} className="bg-black text-white p-1 rounded-md"/>
                   <FontAwesomeIcon icon={faMedal}  className="text-[#290FD3]"/>
                 </div>
-                <div className="bg-white rounded-2xl p-4 flex flex-col mt-7 ml-10 w-[255px]">
-                    <FontAwesomeIcon icon={faLock} className="absolute text-black ml-52 bg-[#E1DEDE] p-2 border-2 border-white rounded-full mt-[-23px]"/>
+                <div className="bg-white rounded-2xl p-6 flex flex-col mt-7 ml-10 w-[315px]">
+                    <FontAwesomeIcon icon={faLock} className="absolute text-black ml-[260px] bg-[#E1DEDE] p-2 border-2 border-white rounded-full mt-[-33px]"/>
                     <span className="text-black text-2xl font-semibold">AI CV Rater</span>
                     <span className="text-[#8F8F8F] text-sm font-normal mt-3">Master your chances of being</span>
                     <span className="text-[#8F8F8F] text-sm font-normal">shortlisted. Seamlessly monitor</span>
@@ -75,55 +75,130 @@ export default function LearningPlan (){
                 />
             </div>
               <div className="flex gap-3">
-                <div className="bg-[#C6EEFA] rounded-2xl justify-center flex w-24 mt-10">
+                <div className="bg-[#C6EEFA] rounded-2xl justify-center flex w-24 h-[100px] mt-10">
                    <div className="flex flex-col gap-6">
-                      <span className="text-black text-3xl mt-7 font-bold">26</span>
+                      <span className="text-black text-3xl mt-4 font-bold">26</span>
                       <span className="text-[15px] text-black font-medium ">Total</span>
                    </div>
                 </div>
-                <div className="bg-[#C2FCCB] rounded-2xl justify-center flex w-24 mt-10">
+                <div className="bg-[#C2FCCB] rounded-2xl justify-center flex w-24 h-[100px] mt-10">
                     <span className="absolute ml-20  text-2xl">🎉</span>
                    <div className="flex flex-col gap-6 justify-center items-center ">
-                      <span className="text-black text-3xl mt-5 font-bold">5</span>
+                      <span className="text-black text-3xl mt-3 font-bold">5</span>
                       <span className="text-[15px] text-black font-medium">Completed</span>
                    </div>
                 </div>
-                <div className="bg-[#F1F1F1] rounded-2xl justify-center flex w-24 mt-10 border border-gray-300">
+                <div className="bg-[#F1F1F1] rounded-2xl justify-center flex w-24 h-[100px] mt-10 border border-gray-300">
                    <div className="flex flex-col gap-6 justify-center items-center p-2">
-                      <span className="text-black text-3xl mt-5 font-bold ">23</span>
+                      <span className="text-black text-3xl mt-3 font-bold ">23</span>
                       <span className="text-[15px] text-black font-medium">Upcoming</span>
                    </div>
                 </div>
                 </div>
-                <div>
-
+                <div className="bg-white rounded-2xl p-4 flex flex-col mt-7 w-[315px]">
+                    <FontAwesomeIcon icon={faBrain} className="absolute text-black ml-[270px] bg-[#C2FCCB] p-2 border-2 border-white rounded-full mt-[-23px]"/>
+                    <span className="text-black text-2xl font-semibold">Penetration testing</span>
+                    <span className="text-[#8F8F8F] text-sm font-normal mt-3">Master your chances of being</span>
+                    <span className="text-[#8F8F8F] text-sm font-normal">shortlisted. Seamlessly monitor</span>
+                    <span className="text-[#8F8F8F] text-sm font-normal">and manage resume shortcomings.</span>
+                    <div className="flex justify-between">
+                     <button className="text-black bg-[#C2FCCB] w-1/2 p-1 rounded-3xl font-medium mt-3">Completed 🎉</button>
+                     <div className="flex  rounded-3xl gap-2 p-1"> 
+                     <FontAwesomeIcon icon={faEllipsisH}  className="text-black bg-[#E1DEDE] p-1 rounded-full mt-1 text-xl"/>
+                     <div className="bg-[#E1DEDE] p-1 rounded-3xl flex gap-3">
+                      <FontAwesomeIcon icon={faClose}  className="text-black p-1" />
+                      <FontAwesomeIcon icon={faCheck} className="bg-black text-white p-1 rounded-full"/>
+                      </div>
+                     </div>
+                     </div>
                 </div>
-                <div>
-
+                <div className="bg-white rounded-2xl p-4 flex flex-col mt-12 w-[315px]">
+                    <div className="absolute text-black ml-[275px] bg-[#C2FCCB] p-[14px] border-2 border-white rounded-full mt-[-23px]"/>
+                    <span className="text-black text-2xl font-semibold">Ethical Hacking</span>
+                    <span className="text-[#8F8F8F] text-sm font-normal mt-3">Easily track and manage your </span>
+                    <span className="text-[#8F8F8F] text-sm font-normal">verbal and technical skills</span>
+                    <div className="flex justify-between mt-7">
+                     <button className="text-black bg-[#C2FCCB] w-1/2 p-1 rounded-3xl font-medium">Explore</button>
+                     <FontAwesomeIcon icon={faEllipsisH}  className="text-black bg-[#E1DEDE] p-1 rounded-full mt-1 text-xl"/>
+                     </div>
                 </div>
-                <div>
-
+                <div className="bg-white rounded-2xl p-4 flex flex-col mt-12 w-[315px]">
+                    <div className="absolute text-black ml-[275px] bg-[#C2FCCB] p-[14px] border-2 border-white rounded-full mt-[-23px]"/>
+                    <span className="text-black text-2xl font-semibold">Bug Bounty</span>
+                    <span className="text-[#8F8F8F] text-sm font-normal mt-3">Easily track and manage your </span>
+                    <span className="text-[#8F8F8F] text-sm font-normal">verbal and technical skills</span>
+                    <div className="flex justify-between mt-7">
+                     <button className="text-black bg-[#E1DEDE] w-1/2 p-1 rounded-3xl font-medium">Upcoming <FontAwesomeIcon icon={faClock} className="text-[#757474]"/> </button>
+                     <FontAwesomeIcon icon={faEllipsisH}  className="text-black bg-[#E1DEDE] p-1 rounded-full mt-1 text-xl"/>
+                     </div>
                 </div>
-                <div>
-
+                <div className="bg-white rounded-2xl p-4 flex flex-col mt-12 w-[315px]">
+                    <div className="absolute text-black ml-[275px] bg-[#C2FCCB] p-[14px] border-2 border-white rounded-full mt-[-23px]"/>
+                    <span className="text-black text-2xl font-semibold">Computer Hacking</span>
+                    <span className="text-[#8F8F8F] text-sm font-normal mt-3">Easily track and manage your </span>
+                    <span className="text-[#8F8F8F] text-sm font-normal">verbal and technical skills</span>
+                    <div className="flex justify-between mt-7">
+                     <button className="text-black bg-[#E1DEDE] w-1/2 p-1 rounded-3xl font-medium">Upcoming <FontAwesomeIcon icon={faClock} className="text-[#757474]"/> </button>
+                     <FontAwesomeIcon icon={faEllipsisH}  className="text-black bg-[#E1DEDE] p-1 rounded-full mt-1 text-xl"/>
+                     </div>
                 </div>
             </div>
-            <div className="flex flex-col m-10 bg-[#ECE9E9]">
+            <div className="flex flex-col m-10 ">
                 <span className="text-black text-3xl font-bold">My Quizzes</span>
-                <div>
-
+                <div className="bg-[#C6EEFA] rounded-2xl p-4 flex flex-col mt-5 w-[315px]">
+                  <span className="text-black text-end font-bold">tue, 25</span>
+                   <div className="bg-[#E1F8FF] p-4 rounded-3xl flex justify-start mt-4">
+                     <span className="text-black font-bold text-sm">Fundamentals of information security</span>
+                   </div>
+                    <div className="flex justify-center mt-2">
+                     <button className="text-black bg-[#E1F8FF] w-full p-3 rounded-3xl font-bold text-xl">Play</button>
+                     </div>
                 </div>
-                <div>
-
+                <div className="bg-[#F4B2F5] rounded-2xl p-4 flex flex-col mt-5 w-[315px]">
+                  <div className="flex justify-between p-4">
+                    <span className="text-black font-bold text-lg">Lesson</span>
+                    <span className="text-black text-end font-bold text-lg">tue, 25</span>
+                  </div>
+                   <div className="bg-[#FEDDFE] p-4  rounded-3xl flex flex-col justify-center mt-2">
+                     <span className="text-black font-bold text-xs">Overview of healthcare delivery</span>
+                     <span className="text-black font-bold text-xs"> systems, health policy, and their </span>
+                     <span className="text-black font-bold text-xs">impact on patient care.</span>
+                   </div>
                 </div>
-                <div>
-
+                <div className="bg-[#F5EEB2] rounded-2xl p-4 flex flex-col mt-5 w-[315px]">
+                  <div className="flex justify-between p-4">
+                    <span className="text-black font-bold text-lg">Task</span>
+                    <span className="text-black text-end font-bold text-lg">tue, 25</span>
+                  </div>
+                   <div className="bg-[#FCF7D1] p-4 rounded-3xl flex flex-col justify-start mt-2">
+                     <span className="text-black font-bold text-xs">Importance of teamwork and </span>
+                     <span className="text-black font-bold text-xs">communication among healthcare</span>
+                     <span className="text-black font-bold text-xs">professionals for optimal patient</span>
+                     <span className="text-black font-bold text-xs">outcomes.</span>
+                   </div>
                 </div>
-                <div>
-
+                 <div className="bg-[#C2FCCB] rounded-2xl p-4 flex flex-col mt-5 w-[315px]">
+                  <div className="flex justify-between p-4">
+                    <span className="text-black font-bold text-lg">Task</span>
+                    <span className="text-black text-end font-bold text-lg">tue, 25</span>
+                  </div>
+                   <div className="bg-[#ECFDEE] p-4 rounded-3xl flex flex-col justify-start mt-2">
+                     <span className="text-black font-bold text-xs">Importance of teamwork and </span>
+                     <span className="text-black font-bold text-xs">communication among healthcare</span>
+                     <span className="text-black font-bold text-xs">professionals for optimal patient</span>
+                     <span className="text-black font-bold text-xs">outcomes.</span>
+                   </div>
                 </div>
-                <div>
-
+                <div className="bg-[#F4B2F5] rounded-2xl p-4 flex flex-col mt-5 w-[315px]">
+                  <div className="flex justify-between p-4">
+                    <span className="text-black font-bold text-lg">Lesson</span>
+                    <span className="text-black text-end font-bold text-lg">tue, 25</span>
+                  </div>
+                   <div className="bg-[#FEDDFE] p-4  rounded-3xl flex flex-col justify-center mt-2">
+                     <span className="text-black font-bold text-xs">Overview of healthcare delivery</span>
+                     <span className="text-black font-bold text-xs"> systems, health policy, and their </span>
+                     <span className="text-black font-bold text-xs">impact on patient care.</span>
+                   </div>
                 </div>
             </div>
           </div>
